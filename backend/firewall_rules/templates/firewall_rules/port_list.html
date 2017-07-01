@@ -1,0 +1,79 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>PORTS</span>
+                <span class='rg-dek'>These are the ports in the system.</span>
+                
+                <!--
+                {% if is_paginated %}
+                    <div class="pagination">
+                        <span class="page-links">
+                            {% if page_obj.has_previous %}
+                                <a href="{% url 'firewall_rules_namespace:ports' %}?page={{ page_obj.previous_page_number }}">previous</a>
+                            {% endif %}
+                            <span class="page-current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                            </span>
+                            {% if page_obj.has_next %}
+                                <a href="{% url 'firewall_rules_namespace:ports' %}?page={{ page_obj.next_page_number }}">next</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                {% endif %} 
+                -->               
+                
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:ports_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Protocol</th>
+                <th class='number '>Number</th>
+                <th class='text '></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for ports in ports_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='ID'>{{ ports.id }} </td>
+                    <td class='text ' data-title='Owner'>{{ ports.owner }}</td>
+                    <td class='text ' data-title='Protocol'>{{ ports.protocol }}</td>
+                    <td class='number ' data-title='Number'>{{ ports.number }}{% if ports.range %} - {{ ports.number2 }} {% endif %}</td>
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if ports.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:ports_detail' ports.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:ports_detail' ports.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:ports_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

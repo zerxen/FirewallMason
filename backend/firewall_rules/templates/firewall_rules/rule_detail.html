@@ -1,0 +1,226 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+<!-- FORM START -->
+{% if rule.id == 0 or rule.id is None %} 
+    <form action="{% url 'firewall_rules_namespace:rules_detail' '0' 'new' %}" method="post">
+    {% csrf_token %}
+{% else %}
+    <form action="{% url 'firewall_rules_namespace:rules_detail' rule.id 'edit' %}" method="post">
+    {% csrf_token %}
+{% endif %} 
+
+
+
+
+<!-- TABLE START -->
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>
+                    RULE ID:  {% if rule.id == 0 or rule.id is None %}NEW{% else %} {{ rule.id }} {% endif %}    
+                </span>
+                <span class='rg-dek'>
+                    Edit the item here and click submit.                
+                </span>
+                                  
+ 
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <input type="submit" value="SUBMIT" />
+                    <a href="{% url 'firewall_rules_namespace:rules' %}"> BACK </a>
+                </span>
+            </div>                    
+            </caption>        
+            <!--<thead>
+                <tr>
+                <th class='text '>Sources Static</th>
+                <th class='text '>Sources Dynamic</th>
+                <th class='text '>Source Services/Ports</th>
+                <th class='text '>Destination Static</th>
+                <th class='text '>Destination Dynamic</th>
+                <th class='text '>Destination Services/Ports</th>
+                <th class='text '>Comment</th>
+                </tr>
+            </thead> -->    
+            <tbody >
+                
+                <tr class='' >
+                    <td class='text ' data-title='Static Source'>
+                        <font style='font-weight: bold;'>OPTIONS:</font>
+                    </td>                
+                    <td>
+                        <font style='font-weight: bold;'>*OWNER:</font>
+                        <select name="owner_id">
+                        {% for group_extension in group_extension_list %}
+                            <option value="{{ group_extension.id }}" {% if group_extension == rule.owner %} selected="selected" {% endif %} >{{ group_extension }}</option>
+                        {% endfor %} 
+                        </select><br><br>
+                        <font style='font-weight: bold;'>**ACTION:</font>
+                        <select name="action">
+                        {% for key, value in rule.ACTIONS %}
+                            <br><option value="{{ key }}" {% if rule.action == key %} selected="selected" {% endif %} > {{value}}  </option>     
+                        {% endfor %}
+                        </select><br>               
+                    </td>
+                    <td colspan='2'>
+                        <font style='font-weight: bold;'>COMMENT :</font><br>
+                        <textarea id="comment" wrap= 'soft' rows="6" cols="80" name="comment">{{ rule.comment }}</textarea>                    
+                    </td>
+                    <td rowspan='3'>
+                        <font style='font-weight: bold;'>NOTES:</font>
+                        <table class='' style=' border-style: dotted;border-width: 3px; border-color: black;'>
+                            <tr><td style=' border-style: dotted;border-width: 2px; border-color: black;'>                    
+                                    *Ownership assignment is possible only between groups you are member of.<br><br> 
+                                    **Please NOTE that DENY option is only available for admin priviledge groups. <br><br>
+                                    ***PLACEHOLDER <br><br>
+                                    ****PLACEHOLDER <br><br>
+                                    *****PLACEHOLDER <br><br>
+                            </td></tr>
+                        </table>   
+                    </td> 
+                </tr>
+                <tr class='' >
+                
+                    <td class='text ' data-title='Static Source'>
+                        <font style='font-weight: bold;'>SOURCE:</font>
+                    </td>
+                  
+                                
+                    <td class='text ' data-title='Static Source'>
+                        <font style='font-weight: bold;'>STATIC:</font>
+                        <!-- STATIC SOURCE -->
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="static_source" data-is-stacked="1" id="id_static_source" name="static_source" required>
+                            {% for static_source in static_source_m2mfield %}
+                                <option value="{{ static_source.id }}" {% if static_source in static_source_m2mfield_selected %} selected="selected" {% endif %}>{{ static_source }}</option>
+                            {% endfor %} 
+                        </select>
+
+                        
+                    </td>
+                    <td class='text ' data-title='Dynamic Source'>
+                        <font style='font-weight: bold;'>***DYNAMIC:</font>
+                        <table class='' style=' border-style: dotted;border-width: 2px; border-color: black;'>
+                            <tr>                    
+                                <td style=' border-style: dotted;border-width: 1px; border-color: black;'>                                    
+            
+                                    <!-- DYNAMIC SOURCE -->
+                                    <select multiple="multiple" class="selectfilterstacked" data-field-name="dynamic_source" data-is-stacked="1" id="id_dynamic_source" name="dynamic_source" required>
+                                        {% for dynamic_source in dynamic_source_m2mfield %}
+                                            <option value="{{ dynamic_source.id }}" {% if dynamic_source in dynamic_source_m2mfield_selected %} selected="selected" {% endif %}>{{ dynamic_source }}</option>
+                                        {% endfor %} 
+                                    </select> 
+                                </td>
+                                <td width='180px'>  
+                                    <!-- DYNAMIC SOURCE TYPE -->
+                                    <font style='font-weight: bold; text-decoration: underline;'>****MODE:</font>
+                                    <select name="dynamic_source_type">
+                                    {% for key, value in rule.DYNAMIC_TYPES %}
+                                        <br><option value="{{ key }}" {% if rule.dynamic_source_type == key %} selected="selected" {% endif %} > {{value}}  </option>     
+                                    {% endfor %}
+                                    </select>
+                                    <br><br>
+                                    *****LOCATION FOR FORCED "SEMI-STATIC"
+                                    <select name="dynamic_source_location">
+                                        <option value="" {% if not dynamic_source_location_fkfield_selected %} selected="selected" {% endif %}> -- </option>
+                                        {% for location in dynamic_source_location_fkfield %}
+                                            <option value="{{ location.id }}" {% if location == dynamic_source_location_fkfield_selected %} selected="selected" {% endif %}>{{ location }}</option>
+                                        {% endfor %} 
+                                    </select>   
+                                                                                   
+                                                       
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </td>
+                    
+                    <td class='text ' data-title='Source Services'>
+                        <font style='font-weight: bold;'>PORTS/SERVICES:</font>
+                        <!-- SOURCE SERVICES -->
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="source_port_services" data-is-stacked="1" id="id_source_port_services" name="source_port_services" required>
+                            {% for source_port_services in source_port_services_m2mfield %}
+                                <option value="{{ source_port_services.id }}" {% if source_port_services in source_port_services_m2mfield_selected %} selected="selected" {% endif %}>{{ source_port_services }}</option>
+                            {% endfor %} 
+                        </select>
+                        
+                    </td>  
+                    
+                </tr>
+                <tr class='' >
+                
+                    <td class='text ' data-title='Static Source'>
+                        <font style='font-weight: bold;'>DESTINATION:</font>
+                    </td>                                  
+    
+                    <td class='text ' data-title='Static destination'>
+                        <font style='font-weight: bold;'>STATIC:</font>
+                        <!-- STATIC destination -->
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="static_destination" data-is-stacked="1" id="id_static_destination" name="static_destination" required>
+                            {% for static_destination in static_destination_m2mfield %}
+                                <option value="{{ static_destination.id }}" {% if static_destination in static_destination_m2mfield_selected %} selected="selected" {% endif %}>{{ static_destination }}</option>
+                            {% endfor %} 
+                        </select>
+
+                        
+                    </td>
+                    <td class='text ' data-title='Dynamic destination'>
+                        <font style='font-weight: bold;'>DYNAMIC:</font>
+                        <table class='' style=' border-style: dotted;border-width: 2px; border-color: black;'>
+                            <tr>                    
+                                <td style=' border-style: dotted;border-width: 1px; border-color: black;'>                                    
+            
+                                    <!-- DYNAMIC destination -->
+                                    <select multiple="multiple" class="selectfilterstacked" data-field-name="dynamic_destination" data-is-stacked="1" id="id_dynamic_destination" name="dynamic_destination" required>
+                                        {% for dynamic_destination in dynamic_destination_m2mfield %}
+                                            <option value="{{ dynamic_destination.id }}" {% if dynamic_destination in dynamic_destination_m2mfield_selected %} selected="selected" {% endif %}>{{ dynamic_destination }}</option>
+                                        {% endfor %} 
+                                    </select> 
+                                </td>
+                                <td width='180px'> 
+                                    <!-- DYNAMIC destination TYPE -->
+                                    <font style='font-weight: bold; text-decoration: underline;'>MODE:</font>
+                                    <select name="dynamic_destination_type">
+                                    {% for key, value in rule.DYNAMIC_TYPES %}
+                                        <br><option value="{{ key }}" {% if rule.dynamic_destination_type == key %} selected="selected" {% endif %} > {{value}}  </option>     
+                                    {% endfor %}
+                                    </select>
+                                    <br><br>
+                                    *****LOCATION FOR FORCED "SEMI-STATIC"
+                                    <select name="dynamic_destination_location">
+                                        <option value="" {% if not dynamic_destination_location_fkfield_selected %} selected="selected" {% endif %}> -- </option>
+                                        {% for location in dynamic_destination_location_fkfield %}
+                                            <option value="{{ location.id }}" {% if location == dynamic_destination_location_fkfield_selected %} selected="selected" {% endif %}>{{ location }}</option>
+                                        {% endfor %} 
+                                    </select>                                     
+                                                       
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </td>
+                    
+                    <td class='text ' data-title='destination Services'>
+                        <font style='font-weight: bold;'>PORTS/SERVICES:</font>
+                        <!-- destination SERVICES -->
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="destination_port_services" data-is-stacked="1" id="id_destination_port_services" name="destination_port_services" required>
+                            {% for destination_port_services in destination_port_services_m2mfield %}
+                                <option value="{{ destination_port_services.id }}" {% if destination_port_services in destination_port_services_m2mfield_selected %} selected="selected" {% endif %}>{{ destination_port_services }}</option>
+                            {% endfor %} 
+                        </select>            
+                    </td>
+                </tr>                 
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <input type="submit" value="SUBMIT" />
+            <a href="{% url 'firewall_rules_namespace:rules' %}"> BACK </a>
+        </span>
+    </div>          
+</div>    
+
+
+</form>

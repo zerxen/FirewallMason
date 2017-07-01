@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Peter's Firewall Rules Management System</title>
+<!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+{% load static %}
+<!-- JS imports for admin horizontal filter to work -->
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/core.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/vendor/jquery/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/jquery.init.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/admin/RelatedObjectLookups.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/SelectBox.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/SelectFilter2.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/change_form.js' %}"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/prepopulate_init.js' %}"></script>
+
+<!-- CSS imports -->
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/reset.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/layout.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/menu.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/table.css' %}" />
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/stolen_admin/static/admin/css/widgets_firebrick.css' %}" />
+<!--<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/stolen_admin/static/admin/css/widgets.css' %}" />-->
+</head>
+<body>
+
+    <div id="wrapper">
+        <div id="headerwrap">
+        <div id="header">
+            
+            <p>
+                
+                <a href="{% url 'firewall_rules_namespace:index' %}">
+                <img style='margin-right: 10px' align="left" height="50px" src="{% static 'firewall_rules/images/logo.png' %}">
+                <br>
+                <font style='font-size: 20px;'>Firewall Mason</font><br>
+                <i>... a.k.a. Peter's Multi-Team Collaborative Firewall Policy Builder</i>
+                </a>
+
+            </p>
+            
+        </div>
+        </div>
+        
+                
+        <div id="navigationwrap">
+        <div id="navigation">
+            
+        <ul id="menu-bar">
+            <!--<li class="active"><a href="{% url 'firewall_rules_namespace:index' %}">HOME</a></li>-->
+            <li><a href="{% url 'firewall_rules_namespace:index' %}">HOME</a></li>
+            <li><a href="{% url 'firewall_rules_namespace:rules' %}">RULES</a></li>
+            <li><a href="#">OBJECT GROUPS</a>
+                 <ul>
+                      <li><a href="{% url 'firewall_rules_namespace:systemmaps' %}">SYSTEM MAPS</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds' %}">NETWORK OBJECTS TO LOCATIONS BIND</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:staticnetworkobjectgroups' %}">STATIC OBJECT GROUPS</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:atomicnetworkobjects' %}">ATOMIC NETWORK OBJECTS</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:locations' %}">LOCATIONS / DC(s)</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:services' %}">SERVICES</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:ports' %}">PORTS</a></li>
+                 </ul>
+            </li>
+            <li><a href="{% url 'firewall_rules_namespace:firewall_configuration' %}">FIREWALL CONFIGURATION</a></li>
+            <li><a href="#">HELP</a>
+                 <ul>
+                      <li><a href="{% url 'firewall_rules_namespace:requestaccess' %}">REQUEST ACCESS</a></li>
+                      <li><a href="{% url 'firewall_rules_namespace:about' %}">ABOUT & HELP</a></li>
+                 </ul> 
+            </li>           
+        </ul>           
+            
+            
+            
+        </div>
+        </div>
+        <div id="contentliquid"><div id="contentwrap">
+        <div id="content">
+            <p>
+           
+            <!-- ERROR DISPLAY BETWEEN HEADER AND MENU -->
+            {% if error_message %}<p><font color="red">ERROR: {{ error_message }}</font></p>{% endif %} 
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                    {{ message }}
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}                      
+           <!-- 
+           ALL THE LIST VIEWS 
+           -->
+            {% if rules_list %} 
+                {% include "firewall_rules/rule_list.html" %}              
+                
+            {% elif ports_list %}
+                {% include "firewall_rules/port_list.html" %}
+            {% elif services_list %}
+                {% include "firewall_rules/service_list.html" %}
+            {% elif locations_list %}
+                {% include "firewall_rules/location_list.html" %}                
+            {% elif locations_for_fw_config_list %}
+                {% include "firewall_rules/locations_for_fw_config_list.html" %}     
+            {% elif atomicnetworkobject_list %}
+                {% include "firewall_rules/atomicnetworkobject_list.html" %} 
+            {% elif staticnetworkobjectgroup_list %}
+                {% include "firewall_rules/staticnetworkobjectgroup_list.html" %}   
+            {% elif systemmap_list %}
+                {% include "firewall_rules/systemmap_list.html" %}
+            {% elif atomicnetworkobjecttolocationbind_list %}
+                {% include "firewall_rules/atomicnetworkobjecttolocationbind_list.html" %}                                                                       
+                    
+           <!-- 
+           ALL THE DETAIL VIEWS 
+           -->                
+            {% elif port %} 
+                {% include "firewall_rules/port_detail.html" %} 
+            {% elif service %} 
+                {% include "firewall_rules/service_detail.html" %} 
+            {% elif location %} 
+                {% include "firewall_rules/location_detail.html" %}  
+            {% elif atomicnetworkobject %} 
+                {% include "firewall_rules/atomicnetworkobject_detail.html" %} 
+            {% elif staticnetworkobjectgroup %} 
+                {% include "firewall_rules/staticnetworkobjectgroup_detail.html" %}    
+            {% elif systemmap %} 
+                {% include "firewall_rules/systemmap_detail.html" %} 
+            {% elif atomicnetworkobjecttolocationbind %} 
+                {% include "firewall_rules/atomicnetworkobjecttolocationbind_detail.html" %}
+            {% elif rule %} 
+                {% include "firewall_rules/rule_detail.html" %} 
+                
+                
+            {% elif version_control %} 
+                {% include "firewall_rules/version_control.html" %}                                                       
+                
+                                          
+                       
+           <!-- 
+           FAILBACK VIEWS
+           -->  
+            {% elif about %} 
+                {% include "firewall_rules/about.html" %}  
+            {% else %}
+                {% include "firewall_rules/home.html" %} 
+            {% endif %}           
+           </p>
+        </div>
+        </div></div>
+        
+        <div id="leftcolumnwrap">
+            <div id="leftcolumn">
+                <p>
+                {% include "firewall_rules/left_menu.html" %} 
+                </p>
+            </div>
+        </div>
+        <!--
+        <div id="rightcolumnwrap">
+        <div id="rightcolumn">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Fusce nec tellus sed augue semper porta. Mauris massa. Vestibulum lacinia arcu eget nulla.</p>
+        </div>
+        </div>
+        -->
+        <div id="footerwrap">
+        <div id="footer">
+            <p>
+            {% if user.username %}    
+                <strong>Logged in as:  {{ user.username }} [<a style='color: white' href="{% url 'firewall_rules_namespace:logout' %}">LOG-OUT</a>]</strong>                      
+            {% else %}
+                Logged in as: Anonymous User [<a style='color: white' href="{% url 'login' %}">LOG-IN</a>]
+            {% endif %}
+            </p>
+            <p align='right'>Copyright (c) 2017, Peter Havrila, <a href='http:\\networkgeekstuff.com'>networkgeekstuff.com</a></p>
+        </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<form action="{% url 'firewall_rules_namespace:network_objects_create' %}" method="post">
+{% csrf_token %}
+<input type="text" name="ID" value="0" disabled/>
+<input type="text" name="NAME" id="NAME" value="" />
+<input type="text" name="TYPE" id="TYPE" value="" />
+<input type="text" name="VALUE" id="VALUE" value="" />
+<input type="submit" value="CREATE" />
+
+</form>

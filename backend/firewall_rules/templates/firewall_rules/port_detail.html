@@ -1,0 +1,81 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+<!-- FORM START -->
+{% if port.id == 0 or port.id is None %} 
+    <form action="{% url 'firewall_rules_namespace:ports_detail' port.id 'new' %}" method="post">
+    {% csrf_token %}
+{% else %}
+    <form action="{% url 'firewall_rules_namespace:ports_detail' port.id 'edit' %}" method="post">
+    {% csrf_token %}
+{% endif %}   
+
+<!-- TABLE START -->
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>
+                    PORT ID: {% if port.id == 0 or port.id is None %}NEW{% else %} {{ port.id }} {% endif %}    
+                </span>
+                <span class='rg-dek'>
+                    Edit the item here and click submit.                
+                </span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <input type="submit" value="SUBMIT" />
+                    <a href="{% url 'firewall_rules_namespace:ports' %}"> BACK </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>Range</th>
+                <th class='text '>Protocol</th>
+                <th class='number '>Port / Range START</th>
+                <th class='number '>Range END</th>
+                <th class='text '>Owner Group</th>
+                <th class='text '>Description</th>
+                </tr>
+            </thead>
+            <tbody> 
+                <tr class=''>
+                    <td class='text ' data-title='Range'>
+                        <select name="range">
+                            <option value="1" {% if port.range %} selected="selected" {% endif %} >TRUE</option>
+                            <option value="0" {% if not port.range %} selected="selected" {% endif %} >FALSE</option>
+                        </select>                        
+                    </td>
+                    <td class='text ' data-title='Protocol'>
+                        <select name="protocol">
+                        {% for key, value in port.PROTOCOL_TYPES %}
+                            <br><option value="{{ key }}" {% if port.protocol == key %} selected="selected" {% endif %} > {{value}}  </option>     
+                        {% endfor %}
+                        </select>                        
+                    </td>
+                    <td class='number ' data-title='Port / Range START'><input type="number" name="number" id="NUMBER" value="{{ port.number }}" /></td>
+                    <td class='number ' data-title='Range END'><input type="number" name="number2" id="NUMBER2" value="{{ port.number2 }}" /></td>
+                    <td class='text ' data-title='Owner Group'>
+                        <select name="owner_id">
+                        {% for group_extension in group_extension_list %}
+                            <option value="{{ group_extension.id }}" {% if group_extension == service.owner %} selected="selected" {% endif %} >{{ group_extension }}</option>
+                        {% endfor %} 
+                        </select>                        
+                    </td>
+                    <td class='text ' data-title='Description'>
+                        <input type="text" name="description" id="description" value="{{ port.description }}"/>
+                    </td>
+                </tr>                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <input type="submit" value="SUBMIT" />
+            <a href="{% url 'firewall_rules_namespace:ports' %}"> BACK </a>
+        </span>
+    </div>          
+</div>    
+
+
+</form>

@@ -1,0 +1,74 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+<!-- FORM START -->
+{% if atomicnetworkobjecttolocationbind.id == 0 or atomicnetworkobjecttolocationbind.id is None %} 
+    <form action="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds_detail' '0' 'new' %}" method="post">
+    {% csrf_token %}
+{% else %}
+    <form action="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds_detail' atomicnetworkobjecttolocationbind.id 'edit' %}" method="post">
+    {% csrf_token %}
+{% endif %} 
+
+<!-- TABLE START -->
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>
+                    NETWORK OBJECT TO LOCATION BIND ID:  {% if atomicnetworkobjecttolocationbind.id == 0 or atomicnetworkobjecttolocationbind.id is None %}NEW{% else %} {{ atomicnetworkobjecttolocationbind.id }} {% endif %}    
+                </span>
+                <span class='rg-dek'>
+                    Edit the item here and click submit.                
+                </span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <input type="submit" value="SUBMIT" />
+                    <a href="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds' %}"> BACK </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>Location</th>
+                <th class='text '>Network Objects</th>
+                <th class='text '>Owner</th>
+                </tr>
+            </thead>
+            <tbody > 
+                <tr class='' >
+                    <td class='text ' data-title='Location'>
+                        <select name="location" required>
+                            {% for location in location_fkfield %}
+                                <option value="{{ location.id }}" {% if location == location_fkfield_selected %} selected="selected" {% endif %}>{{ location }}</option>
+                            {% endfor %} 
+                        </select>
+                    </td>                  
+                    <td class='text ' data-title='Network Objects'>
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="network_objects" data-is-stacked="1" id="id_network_objects" name="network_objects" required>
+                            {% for network_object in network_objects_m2mfield %}
+                                <option value="{{ network_object.id }}" {% if network_object in network_objects_m2mfield_selected %} selected="selected" {% endif %}>{{ network_object }}</option>
+                            {% endfor %} 
+                        </select>
+                    </td>
+                    <td class='text ' data-title='Owner Group'>
+                        <select name="owner_id">
+                        {% for group_extension in group_extension_list %}
+                            <option value="{{ group_extension.id }}" {% if group_extension == systemmap.owner %} selected="selected" {% endif %} >{{ group_extension }}</option>
+                        {% endfor %} 
+                        </select>                      
+                    </td>
+                </tr>                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <input type="submit" value="SUBMIT" />
+            <a href="{% url 'firewall_rules_namespace:systemmaps' %}"> BACK </a>
+        </span>
+    </div>          
+</div>    
+
+
+</form>

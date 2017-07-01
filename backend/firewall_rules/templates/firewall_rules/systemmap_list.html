@@ -1,0 +1,66 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>SYSTEM MAPs</span>
+                <span class='rg-dek'>These are the system map in the system.</span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:systemmaps_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Name</th>
+                <th class='text '>Description</th>
+                <th class='text '>Network Map Locations</th>
+                <th class='text '></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for systemmap in systemmap_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='ID'>{{ systemmap.id }} </td>
+                    <td class='text ' data-title='Owner'>{{ systemmap.owner }}</td>
+                    <td class='text ' data-title='Name'>{{ systemmap.name }}</td>
+                    <td class='text ' data-title='Description'><pre>{{ systemmap.description }}</pre></td>
+                    <td class='text ' data-title='Network Map Locations'>
+                    {% for network_object_to_location in systemmap.network_object_to_location_list.all %}
+                        {{ network_object_to_location }}<br>
+                    {% endfor %}
+                    </td>
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if systemmap.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:systemmaps_detail' systemmap.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:systemmaps_detail' systemmap.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:systemmaps_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

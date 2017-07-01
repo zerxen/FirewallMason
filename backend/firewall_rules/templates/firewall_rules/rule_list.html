@@ -1,0 +1,166 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>RULES</span>
+                <span class='rg-dek'>These are the rules in the system.</span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:rules_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Action</th>
+                <th class='text '>Source</th>
+                <th class='text '>Src. Services</th>
+                <th class='text '>Destination</th>
+                <th class='text '>Dst. Service</th>   
+                <th class='text '>Comment</th>            
+                <th class='text '></th>
+
+                </tr>
+            </thead>
+            <tbody>
+            {% for rule in rules_list %}    
+                {% if rule.approved and not rule.successor.id  %}
+                <tr class=''>
+                {% elif rule.approved and rule.successor.id %}
+                <tr class='' style='background-color: #ffb84d'>
+                {% else %}
+                <tr class='' style='background-color: #ffdddd'>
+                {% endif %}
+                    <td class='text ' data-title='ID'>
+                        ID: {{ rule.id }} <br>
+                        Approved:{{ rule.approved }} <br>
+                        Approved_by: {{ rule.approved_by }} <br> 
+                        Successor: {{ rule.successor.id }}<br>
+                        Edited_by: {{ rule.edited_by }}<br>
+                        Rejected: {{ rule.rejected }}<br>
+                        Rejected_reason: {{ rule.rejected_reason }}<br>
+                        Version: {{ rule.version }}<br>
+                    </td>
+                    <td class='text ' data-title='Owner'>{{ rule.owner.prefix }}</td>
+                    <td class='text ' data-title='action'>
+                        {% for key, value in rule.ACTIONS %}
+                            {% if rule.action == key %} {{ value }} {% endif %}     
+                        {% endfor %}
+                    </td>
+                    
+                    <td class='text ' data-title='Source'>
+                    
+                        <table class='' style=' border-style: dotted;border-width: 3px; border-color: black;'>
+                            <tr>
+                                <td style=' border-style: dotted;border-width: 2px; border-color: black;'>
+                                    <font style='font-weight: bold; text-decoration: underline;'>Static:</font><br>
+                                    {% for static_source in rule.static_source.all %}
+                                        {{ static_source }}<br>
+                                    {% endfor %}
+                                </td</tr>
+                                <tr><td style=' border-style: dotted;border-width: 2px; border-color: black;'>
+                                    <font style='font-weight: bold; text-decoration: underline;'>Dynamic:</font><br>
+                                    <font style='font-weight: bold;'>MODE:</font>
+                                    {% for key, value in rule.DYNAMIC_TYPES %}
+                                        {% if rule.dynamic_source_type == key %} {{ value }} {% endif %}     
+                                    {% endfor %}
+                                    <br>
+                                    {% if rule.dynamic_source_type == 'S' %}
+                                        <font style='font-weight: bold;'>STATIC FIXED LOCATION:</font>
+                                        {{ rule.dynamic_source_location }}
+                                        <br>
+                                    {% endif %}
+                                    {% if rule.dynamic_source.all %} 
+                                        {% for dynamic_source_source in rule.dynamic_source.all %}
+                                            {{ dynamic_source_source }}<br>
+                                        {% endfor %} 
+                                    {% else %}   
+                                        EMPTY
+                                    {% endif %}                
+                                </td>
+                            </tr>
+                        </table>
+                    
+                    <td class='text ' data-title='Source Service'>
+                    {% for source_port_service in rule.source_port_services.all %}
+                        {{ source_port_service }}<br>
+                    {% endfor %}
+                    </td>     
+                    
+                    <td class='text ' data-title='Destination'>
+                        <table class='' style=' border-style: dotted;border-width: 3px; border-color: black;'>
+                            <tr>
+                                <td style=' border-style: dotted;border-width: 2px; border-color: black;'>
+                                    <font style='font-weight: bold; text-decoration: underline;'>Static:</font><br>
+                                    {% for static_destination in rule.static_destination.all %}
+                                        {{ static_destination }}<br>
+                                    {% endfor %}
+                                </td</tr>
+                                <tr><td style='border-style: dotted;border-width: 2px; border-color: black;'>
+                                    <font style='font-weight: bold; text-decoration: underline;'>Dynamic:</font><br>
+                                    <font style='font-weight: bold;'>MODE:</font>
+                                    {% for key, value in rule.DYNAMIC_TYPES %}
+                                        {% if rule.dynamic_source_type == key %} {{ value }} {% endif %}     
+                                    {% endfor %}
+                                    <br>
+                                    {% if rule.dynamic_destination_type == 'S' %}
+                                        <font style='font-weight: bold;'>STATIC FIXED LOCATION:</font>
+                                        {{ rule.dynamic_destination_location }}
+                                        <br>
+                                    {% endif %}                                    
+                                    {% if rule.dynamic_destination.all %} 
+                                        {% for dynamic_destination_source in rule.dynamic_destination.all %}
+                                            {{ dynamic_destination_source }}<br>
+                                        {% endfor %} 
+                                    {% else %}   
+                                        EMPTY
+                                    {% endif %}                
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                    
+                    <td class='text ' data-title='Source Service'>
+                    {% for destination_port_service in rule.destination_port_services.all %}
+                        {{ destination_port_service }}<br>
+                    {% endfor %}
+                    </td>  
+                    
+                    <td class='text ' data-title='Comment'><pre>{{ rule.comment }}</pre></td>                                     
+                        
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if rule.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:rules_detail' rule.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:rules_detail' rule.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                        
+                    
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:rules_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

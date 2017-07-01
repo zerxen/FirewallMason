@@ -1,0 +1,64 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>SERVICES</span>
+                <span class='rg-dek'>These are the services in the system.</span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:services_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Name</th>
+                <th class='text '>Ports</th>
+                <th class='text '></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for service in services_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='ID'>{{ service.id }} </td>
+                    <td class='text ' data-title='Owner'>{{ service.owner }}</td>
+                    <td class='text ' data-title='Name'>{{ service.name }}</td>
+                    <td class='text ' data-title='Ports'>
+                    {% for port in service.ports.all %}
+                        {{ port }}<br>
+                    {% endfor %}
+                    </td>
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if service.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:services_detail' service.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:services_detail' service.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:services_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

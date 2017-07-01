@@ -1,0 +1,50 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/home.css' %}" />
+    <table style='min-width: 500px; max-width: 700px; margin: 10px;'>
+        <tr><td style='vertical-align: top;'>
+            <p>
+                <font class="content-header">Firewall Mason, ver {{ version }}</font><br>
+                <font class="content-subheader">A collaborative, location aware firewall policy builder.</font>
+                <br><br>
+                Copyright (c) 2017, Peter Havrila, <a href='http:\\networkgeekstuff.com'>networkgeekstuff.com</a>
+                <br><br>
+                Firewall Mason is a firewall ruleset editing tool taking into consideration independent targets of several teams, operating on top of single firewall policy. 
+                Traditionally this task would be done via ticketing system, with independent teams rising firewall requests to firewall team, which would implement the rules
+                in ad-hoc fashion. This approach however always left the rules implemented on the firewall without ownership and in time firewalls became full of old/depricated 
+                rules that nobody is sure if they can be removed and a typical FW mess is born. 
+                <br><br>
+                Firewall Mason proposes alternative approach where rules ownership is done directly by allowing all teams to craft the rules they need in a simple visual tool, 
+                and then merge multiple ruleset of these teams to a central repository. <br><br>
+                <font class="content-subheader">NOTE:</font> Non-admin groups are only allowed 'permit' rules so that rule specific order problems are avoided.                   
+
+            </p>
+        </td><td  style='margin: 10px;'>
+            <img width="400px" src="{% static 'firewall_rules/images/docs/home_v01_common_editing.png' %}">
+        </td></tr>
+        <tr><td>
+            <img width="400px" src="{% static 'firewall_rules/images/docs/home_v01_system_maps.png' %}">
+        </td><td style='vertical-align: top;'>
+            <div>
+                <p>
+                Furthermore, Firewall Mason supports location aware system maps, that allow for definition of systems, that span several different locations, 
+                and firewall rules can be adjusted during export to only apply rules that have a potential to be hit on that firewall. For example if you locations 
+                A, B and C, and you specify ruleset for system that exists only in location A and B, this part of your ruleset will not be applied to firewalls in location C. 
+                </p>          
+            </div>
+        </td></tr>
+        <tr><td style='vertical-align: top;'>               
+            <div>
+                Lastly, Firewall Mason is NOT a firewall configuration tool, it's job is management of rules and 
+                the output is either a JSON or CVS file with the firewall rules for a specific location. While we might consider adding 
+                firewall configuration API in the future (definitelly possible for REST API based firewalls that can take json input), this is not
+                currently in the roadmap.                
+            </div>
+        </td><td align="right">
+            TODO: DOWNLOAD FULL USER-GUIDE HERE
+            <!--<img  src="{% static 'firewall_rules/images/docs/home_v01_fw_export.png' %}">-->    
+        </td></tr>
+        <tr><td>
+        </td><td>
+       
+        </td></tr>        
+    </table>

@@ -1,0 +1,78 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>ATOMIC NETWORK OBJECTS</span>
+                <span class='rg-dek'>These are the atomic network objects in the system.</span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:atomicnetworkobjects_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Name</th>
+                <th class='text '>Type</th>
+                <th class='text '>IP / Subnet / Range</th>
+                <th class='text '></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for atomicnetworkobject in atomicnetworkobject_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='ID'>{{ atomicnetworkobject.id }} </td>
+                    <td class='text ' data-title='Owner'>{{ atomicnetworkobject.owner }}</td>
+                    <td class='text ' data-title='Name'>{{ atomicnetworkobject.name }}</td>
+                    <td class='text ' data-title='Type'>
+                        {% if atomicnetworkobject.type == '4R' %}
+                        IPv4 Range (4R)
+                        {% elif atomicnetworkobject.type == '4S' %}
+                        IPv4 Subnet (4S)
+                        {% else %}  
+                        IPv4 Host (4H)
+                        {% endif %}
+                    </td>
+                    <td class='text ' data-title='IP'>
+                        {{ atomicnetworkobject.octet1 }}.{{ atomicnetworkobject.octet2 }}.{{ atomicnetworkobject.octet3 }}.{{ atomicnetworkobject.octet4 }}
+                        {% if atomicnetworkobject.type == '4R' %}
+                            -{{ atomicnetworkobject.range_octet1 }}.{{ atomicnetworkobject.range_octet2 }}.{{ atomicnetworkobject.range_octet3 }}.{{ atomicnetworkobject.range_octet4 }}
+                        {% elif atomicnetworkobject.type == '4S' %}
+                            /{{ atomicnetworkobject.mask }} 
+                         {% else %}  
+                         {% endif %}                            
+                    </td>                    
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if atomicnetworkobject.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:atomicnetworkobjects_detail' atomicnetworkobject.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:atomicnetworkobjects_detail' atomicnetworkobject.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:atomicnetworkobjects_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

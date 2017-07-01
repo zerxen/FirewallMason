@@ -1,0 +1,94 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+<!-- FORM START -->
+{% if atomicnetworkobject.id == 0 or atomicnetworkobject.id is None %} 
+    <form action="{% url 'firewall_rules_namespace:atomicnetworkobjects_detail' '0' 'new' %}" method="post">
+    {% csrf_token %}
+{% else %}
+    <form action="{% url 'firewall_rules_namespace:atomicnetworkobjects_detail' atomicnetworkobject.id 'edit' %}" method="post">
+    {% csrf_token %}
+{% endif %} 
+
+<!-- TABLE START -->
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>
+                    ATOMIC NETWORK OBJECTS ID:  {% if atomicnetworkobject.id == 0 or atomicnetworkobject.id is None %}NEW{% else %} {{ atomicnetworkobject.id }} {% endif %}    
+                </span>
+                <span class='rg-dek'>
+                    Edit the item here and click submit.                
+                </span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <input type="submit" value="SUBMIT" />
+                    <a href="{% url 'firewall_rules_namespace:atomicnetworkobjects' %}"> BACK </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>Name</th>
+                <th class='text '>Type</th>
+                <th class='text '>IP</th>
+                <th class='text '>Mask</th>
+                <th class='text '>Range IP</th>
+                <th class='text '>Owner</th>
+                </tr>
+            </thead>
+            <tbody > 
+                <tr class='' >
+                    <td class='text ' data-title='Name'>
+                        <input type="text" name="name" id="name" value="{{ atomicnetworkobject.name }}"/>                     
+                    </td>
+                    <td class='text ' data-title='Type'>
+                        <select name="type">
+                        {% for key, value in atomicnetworkobject.OBJECT_TYPES %}
+                            <br><option value="{{ key }}" {% if atomicnetworkobject.type == key %} selected="selected" {% endif %} > {{value}}  </option>     
+                        {% endfor %}
+                        </select>                           
+                    </td>
+                    <td class='number ' data-title='IP'>
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="octet1" id="octet1" value="{{ atomicnetworkobject.octet1 }}"/>
+                            . 
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="octet2" id="octet2" value="{{ atomicnetworkobject.octet2 }}"/>
+                            . 
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="octet3" id="octet3" value="{{ atomicnetworkobject.octet3 }}"/>
+                            . 
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="octet4" id="octet4" value="{{ atomicnetworkobject.octet4 }}"/>
+                    </td>
+                    <td class='number ' data-title='Type'>
+                        / <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted;' type="number" name="mask" id="mask" value="{{ atomicnetworkobject.mask }}"/> 
+                    </td>                      
+                    <td class='number ' data-title='Range IP'>
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="range_octet1" id="range_octet1" value="{{ atomicnetworkobject.range_octet1 }}"/>
+                            . 
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="range_octet2" id="range_octet2" value="{{ atomicnetworkobject.range_octet2 }}"/>
+                            . 
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="range_octet3" id="range_octet3" value="{{ atomicnetworkobject.range_octet3 }}"/>
+                            . 
+                            <input style=' dotted;border-width: 2px; border-color: black;border-style: dotted; -webkit-appearance: none !important; margin: 0 !important; -moz-appearance:textfield !important; width: 20px;' min="0" max="255" type="number" name="range_octet4" id="range_octet4" value="{{ atomicnetworkobject.range_octet4 }}"/>
+                    </td>                                       
+                    <td class='text ' data-title='Owner Group'>
+                        <select name="owner_id">
+                        {% for group_extension in group_extension_list %}
+                            <option value="{{ group_extension.id }}" {% if group_extension == service.owner %} selected="selected" {% endif %} >{{ group_extension }}</option>
+                        {% endfor %} 
+                        </select>                      
+                    </td>
+                </tr>                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <input type="submit" value="SUBMIT" />
+            <a href="{% url 'firewall_rules_namespace:services' %}"> BACK </a>
+        </span>
+    </div>          
+</div>    
+
+
+</form>

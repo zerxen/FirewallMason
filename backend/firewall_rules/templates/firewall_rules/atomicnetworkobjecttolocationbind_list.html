@@ -1,0 +1,61 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>ATOMIC NETWORK OBJECTS TO LOCATION BINDs</span>
+                <span class='rg-dek'>These are the network objects bound for specific locations in the system.</span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>Location</th>
+                <th class='text '>Network Objects</th>
+                <th class='text '>Owner</th>
+                <th class='text '></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for atomicnetworkobjecttolocationbind in atomicnetworkobjecttolocationbind_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='Location'>{{ atomicnetworkobjecttolocationbind.location }} </td>
+                    <td class='text ' data-title='Network Objects'>
+                    {% for network_object in atomicnetworkobjecttolocationbind.network_objects.all %}
+                        {{ network_object }}<br>
+                    {% endfor %}
+                    </td>
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if atomicnetworkobjecttolocationbind.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds_detail' atomicnetworkobjecttolocationbind.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds_detail' atomicnetworkobjecttolocationbind.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:atomicnetworkobjecttolocationbinds_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

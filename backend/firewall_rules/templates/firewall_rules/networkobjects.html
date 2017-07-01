@@ -1,0 +1,21 @@
+<h1>Peter's quick&dirty VPC NextGen Management Firewalls Audit System</h1>
+
+{% if error_message %}<p><strong>{{ error_message }}</strong></p>{% endif %}
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+    <ul>
+    <li><a href="{% url 'firewall_rules_namespace:network_objects_create' %}">ADD NEW</a>
+    {% if network_objects_list %}
+        {% for network_object in network_objects_list %}
+            <li>[<a href="{% url 'firewall_rules_namespace:network_objects_edit' network_object.id %}">EDIT</a>] {{ network_object.name }}, type: {{ network_object.type }}, value: {{ network_object.value }}</li>
+        {% endfor %} 
+    {% else %}
+        <li>No network objects.
+    {% endif %}
+    </ul>
+
+
+
+
+

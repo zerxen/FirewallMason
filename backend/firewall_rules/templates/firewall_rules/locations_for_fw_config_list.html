@@ -1,0 +1,40 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>FIREWALL CONFIGURATION</span>
+                <span class='rg-dek'>Pre location FW rules export</span>
+            </caption>
+            <thead>
+                <tr>
+                <th class='text '>Name</th>
+                <th class='text '>Prefix</th>
+                <th class='text '>Exports</th>
+                <th class='text '>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for location in locations_for_fw_config_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='Name'>{{ location.name }} </td>
+                    <td class='text ' data-title='Prefix'>{{ location.prefix }}</td>
+                    <td class='text ' data-title='Exports'> EXPORT TABLE LINK HERE </td>
+                    <td class='text ' data-title='Description'>{{ location.description }}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>SOURCE</span>: <span class='post-colon'>Sources</span>
+    </div>
+</div>    
+
+
+
+
+

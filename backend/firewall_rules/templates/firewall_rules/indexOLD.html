@@ -1,0 +1,32 @@
+<!-- PART #1 NET OBJECTS -->
+
+<h1>Peter's quick&dirty VPC NextGen Management Firewalls Audit System</h1>
+
+<!-- PART #1 NET OBJECTS -->
+<a href="{% url 'firewall_rules_namespace:network_objects' %}">
+    <h2>Atomic Network Objects</h2>
+</a>
+
+{% if network_objects_list %}
+    <ul>
+    {% for network_object in network_objects_list %}
+        <li>[<a href="{% url 'firewall_rules_namespace:network_objects_edit' network_object.id %}">EDIT</a>] {{ network_object.name }}, type: {{ network_object.type }}, value: {{ network_object.value }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No network objects exit.</p>
+{% endif %}
+
+<!-- PART #2 PORTS OBJECTS -->
+<a href="{% url 'firewall_rules_namespace:ports' %}">
+    <h2>Ports Objects</h2>
+</a>
+{% if ports_list %}
+    <ul>
+    {% for ports in ports_list %}
+        <li>[<a href="{% url 'firewall_rules_namespace:ports_detail' ports.id %}">EDIT</a>] Protocol: {{ ports.protocol }}, number: {{ ports.number }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No ports objects exist.</p>
+{% endif %}

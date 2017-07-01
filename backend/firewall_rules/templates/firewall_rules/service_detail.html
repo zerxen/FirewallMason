@@ -1,0 +1,70 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+<!-- FORM START -->
+{% if service.id == 0 or service.id is None %} 
+    <form action="{% url 'firewall_rules_namespace:services_detail' '0' 'new' %}" method="post">
+    {% csrf_token %}
+{% else %}
+    <form action="{% url 'firewall_rules_namespace:services_detail' service.id 'edit' %}" method="post">
+    {% csrf_token %}
+{% endif %} 
+
+<!-- TABLE START -->
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>
+                    SERVICE ID:  {% if service.id == 0 or service.id is None %}NEW{% else %} {{ service.id }} {% endif %}    
+                </span>
+                <span class='rg-dek'>
+                    Edit the item here and click submit.                
+                </span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <input type="submit" value="SUBMIT" />
+                    <a href="{% url 'firewall_rules_namespace:services' %}"> BACK </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>Name</th>
+                <th class='text '>Ports</th>
+                <th class='text '>Owner Group</th>
+                </tr>
+            </thead>
+            <tbody > 
+                <tr class='' >
+                    <td class='text ' data-title='Name'>
+                        <input type="text" name="name" id="name" value="{{ service.name }}"/>                     
+                    </td>
+                    <td class='text ' data-title='Ports'>
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="ports" data-is-stacked="1" id="id_ports" name="ports" required>
+                            {% for port in ports_m2mfield %}
+                                <option value="{{ port.id }}" {% if port in ports_m2mfield_selected %} selected="selected" {% endif %}>{{ port }}</option>
+                            {% endfor %} 
+                        </select>
+                    </td>
+                    <td class='text ' data-title='Owner Group'>
+                        <select name="owner_id">
+                        {% for group_extension in group_extension_list %}
+                            <option value="{{ group_extension.id }}" {% if group_extension == service.owner %} selected="selected" {% endif %} >{{ group_extension }}</option>
+                        {% endfor %} 
+                        </select>                      
+                    </td>
+                </tr>                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <input type="submit" value="SUBMIT" />
+            <a href="{% url 'firewall_rules_namespace:services' %}"> BACK </a>
+        </span>
+    </div>          
+</div>    
+
+
+</form>

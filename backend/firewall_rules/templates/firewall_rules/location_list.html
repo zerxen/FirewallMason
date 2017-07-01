@@ -1,0 +1,67 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>LOCATIONS</span>
+                <span class='rg-dek'>
+                    These are the locations in the system. <br>
+                    <b>NOTE:</b> Despite the fact that you are allowed to create a new location, 
+                    you should consult such action with admin as firewall configurations are generated per location.
+                    As such firewall rules created specifically for YOUR new location might not be considered by the admins. 
+                </span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:locations_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Name</th>
+                <th class='text '>Prefix</th>
+                <th class='text '>Description</th>
+                <th class='text '>Controls</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for location in locations_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='ID'>{{ location.id }} </td>
+                    <td class='text ' data-title='Owner'>{{ location.owner }}</td>
+                    <td class='text ' data-title='Name'>{{ location.name }}</td>
+                    <td class='text ' data-title='Prefix'>{{ location.prefix }}</td>
+                    <td class='text ' data-title='Description'><pre>{{ location.description }}</pre></td>                    
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if location.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:locations_detail' location.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:locations_detail' location.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:locations_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

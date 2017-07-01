@@ -1,0 +1,53 @@
+# LINUX
+apt-get install -y python-dev libldap2-dev
+pip2 install python-ldap
+pip2 install django-auth-ldap
+pip2 install djangorestframework
+pip2 install markdown       # Markdown support for the browsable API.
+pip2 install django-filter  # Filtering support
+pip2 install django-cors-headers
+
+#LINUX python3
+apt-get install -y python-dev libldap2-dev
+pip3 install pyldap
+pip3 install django-auth-ldap
+pip3 install djangorestframework
+pip3 install markdown       # Markdown support for the browsable API.
+pip3 install django-filter  # Filtering support
+pip3 install django-cors-headers
+
+# WINDOWS
+pip install django
+pip install ./python_ldap-2.4.32-cp27-cp27m-win_amd64.whl
+pip install django-auth-ldap 
+pip install djangorestframework
+pip install markdown       # Markdown support for the browsable API.
+pip install django-filter  # Filtering support
+pip install django-cors-headers
+// rest documentation
+pip install coreapi
+// install vc++ compiler for python
+http://aka.ms/vcpython27
+// then install wheel
+pip install wheel
+// download from http://www.lfd.uci.edu/~gohlke/pythonlibs/#mysql-python
+pip install ./mysqlclient-1.3.10-cp27-cp27m-win_amd64.whl
+
+
+# DJANGO PREPARATION
+del /Q /S firewall_rules\migrations\00* 
+python manage.py makemigrations
+python manage.py migrate
+#python manage.py createsuperuser --username phavrila --email phavrila@gmail.com
+
+
+# LDAP TESTs:
+gnutls-cli --print-cert -p 636 ldap.hp.com --no-ca-verification
+gnutls-cli --x509cafile /home/zerxen/helion/fwmanagement/django_fw_audit_illusion/INSTALLS/hp_root_CA.cer -p 636 ldap.hp.com
+
+cp /home/zerxen/helion/fwmanagement/django_fw_audit_illusion/INSTALLS/hp_root_CA.cer /etc/ssl/certs/ca-certificates.crt
+
+ldapsearch -H ldaps://ldap.hp.com:636 -x -b "o=hp.com"
+ldapsearch -H ldaps://ldap.hp.com:636 -x -b "uid=peter.havrila@hpe.com,ou=People,o=hp.com"
+
+ldapsearch -x -H ldaps://ldap.hp.com:636 -b "uid=peter.havrila@hpe.com,ou=People,o=hp.com" -D "uid=peter.havrila@hpe.com,ou=People,o=hp.com" -w AhojKreten24501368=

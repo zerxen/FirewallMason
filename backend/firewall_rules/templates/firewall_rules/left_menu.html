@@ -1,0 +1,32 @@
+VERSION CONTROL
+<br><br>
+-----------------
+
+{% for groupextension in groupextension_list %}
+
+    Group:
+    {{ groupextension.prefix }}
+    <br>
+    ID:
+    {{ groupextension.id }}
+    <br>
+    Version#:
+    {{ groupextension.version }}
+    <br>
+    Status: 
+        {% for key, value in groupextension.VERSION_STATE %}
+            {% if groupextension.version_states == key %} {{value}} {% endif %}  
+        {% endfor %}
+    <br>
+    <br>
+    {% if groupextension.version_states == 0 %}
+        <a style='color: white' href="{% url 'firewall_rules_namespace:version_control' groupextension.id 'edit' %} ">EDIT</a>
+    {% elif groupextension.version_states == 1 %}
+        <a style='color: white' href=".?group={{ groupextension.id }}&action=submit">SUBMIT</a>
+        <a style='color: white' href=".?group={{ groupextension.id }}&action=cancel">CANCEL</a>
+    {% elif groupextension.version_states == 2 %}
+        <a style='color: white' href=".?group={{ groupextension.id }}&action=withdraw">WITHDRAW</a>
+    {% endif %}
+         
+    -----------------<br>
+{% endfor %}     

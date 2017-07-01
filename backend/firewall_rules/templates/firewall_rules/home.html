@@ -1,0 +1,56 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/home.css' %}" />
+    
+    <div >
+        <p>
+        <font class="content-header">Welcome to the Firewall Mason</font><img width="500px" align='right' src="{% static 'firewall_rules/images/home/high_level_collaboration.png' %}"><br>
+        <font class="content-subheader">A collaborative, location aware firewall policy builder.</font>
+        <br><br>
+        This is the home screen that will show you your current login groups and priviledges and also link to basic explanations of what this tool's intention is.
+        <br>
+            <table class='' style='margin: 10px; border-style: dotted;border-width: 2px; border-color: black;'>
+                <tr>
+                    <td style=' padding: 10px; border-style: dotted;border-width: 1px; border-color: black;'> 
+                        {% if user.username %}
+                                    Hi, {{ user.username }}.<br><br>These are the groups you are member of, and their priviledges, OR you can always <a href="{% url 'firewall_rules_namespace:requestaccess' %}">request access to more groups here</a>:<br>
+                                    <br>
+                                    <ul>
+                                        {% for groupextension in groupextension_list %}
+                                        <li  style='list-style-type: circle;margin-left: 10px'><font class="content-header">{{ groupextension }}</font><br>
+                                        <font class="content-subheader">promiscuous:</font>  {{ groupextension.promiscuous }}<br>
+                                        <font class="content-subheader">admin:</font>  {{ groupextension.admin }}<br>
+                                        <font class="content-subheader">approvers:</font>  {{ groupextension.approvers }} <br>
+                                        <br>
+                                        </li>
+                                        {% endfor %}
+                                    </ul> 
+                                    
+                        {% else %}
+                                    <font class="content-subheader">Please log in using your NT email and password</font>
+                                    <form action="/accounts/login/" method="post" accept-charset="utf-8"> 
+                                        {% csrf_token %}
+                                        <table style='margin: 10px;' ><tr><td>
+                                                <label>Email address:</label>
+                                            </td><td>
+                                                <input autofocus="" type="text" name="username" value="{{ email }}" required />
+                                            </td></tr>
+                                            <tr><td>
+                                                <label>Password:</label>
+                                            </td><td>
+                                                <input type="password" name="password" value="" required />
+                                            </td></tr>
+                                            <tr><td>
+                                                <input type="hidden" name="next" value="{% url 'firewall_rules_namespace:index' %}" />                                            
+                                            </td><td>
+                                                <input type="submit" value="Log in" />
+                                            </td></tr>
+                                        </table >
+                                        
+                                    </form>                                    
+                        {% endif %}                       
+                    </td>
+                </tr>
+            </table>       
+        </p>
+    </div>
+    

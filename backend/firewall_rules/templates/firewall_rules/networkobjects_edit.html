@@ -1,0 +1,10 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+<form action="{% url 'firewall_rules_namespace:network_objects_edit' network_object.id %}" method="post">
+{% csrf_token %}
+<input type="text" name="ID" id="ID" value="{{ network_object.id }}" readonly="readonly" />
+<input type="text" name="NAME" id="NAME" value="{{ network_object.name }}" />
+<input type="text" name="TYPE" id="TYPE" value="{{ network_object.type }}" />
+<input type="text" name="VALUE" id="VALUE" value="{{ network_object.value }}" />
+<input type="submit" value="EDIT" />
+
+</form>

@@ -1,0 +1,64 @@
+
+
+<!-- LISTING ALL NETWORK OBJECTS -->
+
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>STATIC NETWORK OBJECT GROUPS</span>
+                <span class='rg-dek'>These are the network object groups in the system.</span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <a href="{% url 'firewall_rules_namespace:staticnetworkobjectgroups_detail' 0 'new' %}">
+                        ADD
+                    </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>ID</th>
+                <th class='text '>Owner</th>
+                <th class='text '>Name</th>
+                <th class='text '>Network Objects</th>
+                <th class='text '></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for staticnetworkobjectgroup in staticnetworkobjectgroup_list %}    
+                <tr class=''>
+                    <td class='text ' data-title='ID'>{{ staticnetworkobjectgroup.id }} </td>
+                    <td class='text ' data-title='Owner'>{{ staticnetworkobjectgroup.owner }}</td>
+                    <td class='text ' data-title='Name'>{{ staticnetworkobjectgroup.name }}</td>
+                    <td class='text ' data-title='Network Objects'>
+                    {% for network_object in staticnetworkobjectgroup.network_objects.all %}
+                        {{ network_object }}<br>
+                    {% endfor %}
+                    </td>
+                    <td class='number ' data-title='EDIT-link'>
+                        {% if staticnetworkobjectgroup.allow_edit %}
+                            <a href="{% url 'firewall_rules_namespace:staticnetworkobjectgroups_detail' staticnetworkobjectgroup.id 'edit' %}">EDIT</a>
+                            <a href="{% url 'firewall_rules_namespace:staticnetworkobjectgroups_detail' staticnetworkobjectgroup.id 'delete' %}">DELETE</a>
+                        {% else %}
+                            Not owned by your group(s)
+                        {% endif %}</td>
+                </tr>
+            {% endfor %}                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <a href="{% url 'firewall_rules_namespace:staticnetworkobjectgroups_detail' 0 'new' %}">
+                ADD
+            </a>
+        </span>
+    </div>          
+</div>    
+
+
+
+
+

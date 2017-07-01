@@ -1,0 +1,78 @@
+<!-- EDITING OR ADDING NEW OBJECT -->
+
+<!-- FORM START -->
+{% if systemmap.id == 0 or systemmap.id is None %} 
+    <form action="{% url 'firewall_rules_namespace:systemmaps_detail' '0' 'new' %}" method="post">
+    {% csrf_token %}
+{% else %}
+    <form action="{% url 'firewall_rules_namespace:systemmaps_detail' systemmap.id 'edit' %}" method="post">
+    {% csrf_token %}
+{% endif %} 
+
+<!-- TABLE START -->
+<div class='rg-container'>
+
+    <div class='rg-content'>
+        <table class='rg-table zebra' summary='Hed'>
+            <caption class='rg-header'>
+                <span class='rg-hed'>
+                    SYSTEM MAP ID:  {% if systemmap.id == 0 or systemmap.id is None %}NEW{% else %} {{ systemmap.id }} {% endif %}    
+                </span>
+                <span class='rg-dek'>
+                    Edit the item here and click submit.                
+                </span>
+            <div class='rg-source'>
+                <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+                    <input type="submit" value="SUBMIT" />
+                    <a href="{% url 'firewall_rules_namespace:systemmaps' %}"> BACK </a>
+                </span>
+            </div>                    
+            </caption>        
+            <thead>
+                <tr>
+                <th class='text '>Name</th>
+                <th class='text '>Description</th>
+                <th class='text '>Network Objects in Locations</th>
+                <th class='text '>Owner</th>
+                </tr>
+            </thead>
+            <tbody > 
+                <tr class='' >
+                    <td class='text ' data-title='Name'>
+                        <input type="text" name="name" id="name" value="{{ systemmap.name }}"/>                     
+                    </td>
+                    <td class='text ' data-title='Description'>
+    
+                        
+                        <textarea id="description" wrap= 'soft' rows="10" cols="60" name="description">{{ systemmap.description }}</textarea>
+                        
+                        <!--<input type="text" name="description" id="description" value="{{ systemmap.description }}"/>-->                     
+                    </td>                    
+                    <td class='text ' data-title='Network Objects in Locations'>
+                        <select multiple="multiple" class="selectfilterstacked" data-field-name="network_object_to_location_list" data-is-stacked="1" id="id_network_objects" name="network_object_to_location_list" required>
+                            {% for network_object_to_location_list in network_object_to_location_list_m2mfield %}
+                                <option value="{{ network_object_to_location_list.id }}" {% if network_object_to_location_list in network_object_to_location_list_m2mfield_selected %} selected="selected" {% endif %}>{{ network_object_to_location_list }}</option>
+                            {% endfor %} 
+                        </select>
+                    </td>
+                    <td class='text ' data-title='Owner Group'>
+                        <select name="owner_id">
+                        {% for group_extension in group_extension_list %}
+                            <option value="{{ group_extension.id }}" {% if group_extension == systemmap.owner %} selected="selected" {% endif %} >{{ group_extension }}</option>
+                        {% endfor %} 
+                        </select>                      
+                    </td>
+                </tr>                         
+            </tbody>
+        </table>
+    </div>
+    <div class='rg-source'>
+        <span class='pre-colon'>OPERATIONS</span>: <span class='post-colon'>
+            <input type="submit" value="SUBMIT" />
+            <a href="{% url 'firewall_rules_namespace:systemmaps' %}"> BACK </a>
+        </span>
+    </div>          
+</div>    
+
+
+</form>
