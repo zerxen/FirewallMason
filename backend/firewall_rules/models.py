@@ -110,6 +110,8 @@ class GroupExtension(models.Model):
         return group_extension_list
     
 class OwnerControl(models.Model):
+    class Meta:
+        abstract = True
     
     # Owner
     owner = models.ForeignKey(GroupExtension, on_delete=models.CASCADE, default=DEFAULT_OWNER_GROUP)    
@@ -145,6 +147,8 @@ class OwnerControl(models.Model):
         return Objects   
     
 class VersionAndOwnerControl(OwnerControl):
+    class Meta:
+        abstract = True
     version     = models.PositiveIntegerField(default=0) 
     
     @classmethod
@@ -167,6 +171,8 @@ class VersionAndOwnerControl(OwnerControl):
         return Objects       
     
 class ApprovalAndVersionAndOwnerControl(VersionAndOwnerControl):
+    class Meta:
+        abstract = True
     approved    = models.BooleanField(default=False);
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL,default=None,null=True, blank=True,related_name='approved_by')
     edited_by   = models.ForeignKey(User, on_delete=models.SET_NULL,default=None,null=True, blank=True,related_name='edited_by')

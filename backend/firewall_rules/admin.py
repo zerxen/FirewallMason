@@ -13,7 +13,7 @@ class GroupAdmin(admin.ModelAdmin):
 admin.site.register(GroupExtension, GroupAdmin)
 
 class PortsAdmin(admin.ModelAdmin):
-    fields = ['approved','protocol','range', 'number','number2','owner','description']
+    fields = ['protocol','range', 'number','number2','owner','description']
 admin.site.register(Port, PortsAdmin)
   
 class ServicesAdmin(admin.ModelAdmin):    

@@ -2,46 +2,33 @@ from django.conf.urls import url, include
 from django.contrib.auth.models import User
 from rest_framework import routers, serializers, viewsets, mixins
 from firewall_rules.models import *
+from .serializers import *
 from pprint import pprint
-
-# Serializers define the API representation.
-class UserSerializer(serializers.ModelSerializer):
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-details")
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-detail")
-    
-    class Meta:
-        model = User
-        #fields = ('url', 'username', 'email', 'is_staff')
-        #fields = ('username', 'email', 'is_staff')
-        #fields = '__all__'
-        fields = ('id', 'username')
+import custom_mixins
 
 # ViewSets define the view behavior.
 class UserViewSet(viewsets.ModelViewSet):
+    """
+    Returns a list of all **active** accounts in the system.
+
+    For more details on how accounts are activated please [see here][ref].
+
+    [ref]: http://example.com/activating-accounts
+    """        
     queryset = User.objects.all()
     serializer_class = UserSerializer
     
 # ViewSets define the view behavior.
-class MixedViewSet(mixins.CreateModelMixin, 
+class MixedViewSet(custom_mixins.MasonCreateModelMixin, 
                    mixins.RetrieveModelMixin, 
-                   mixins.UpdateModelMixin,
-                   mixins.DestroyModelMixin,
+                   #mixins.UpdateModelMixin,
+                   #mixins.DestroyModelMixin,
                    mixins.ListModelMixin,
                    viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer 
     
        
-    
-# Serializers define the API representation.
-class PortSerializer(serializers.HyperlinkedModelSerializer):
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-details")
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-detail")
-    
-    class Meta:
-        model = Port
-        #fields = ('url', 'username', 'email', 'is_staff')
-        fields = ('protocol', 'range', 'description','number','number2')
 
 
 # ViewSets define the view behavior.
@@ -55,17 +42,6 @@ class PortViewSet(viewsets.ModelViewSet):
 #        return { str(value.pk): str(value) }    
 
 # Serializers define the API representation.
-class ServiceSerializer(serializers.ModelSerializer):
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-details")
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-detail")
-    #ports = serializers.ManyRelatedField(source="ports")
-    #ports = MyPortsField(many=True,queryset=Port.objects.all())
-    
-    class Meta:
-        model = Service
-        #fields = ('url', 'username', 'email', 'is_staff')
-        #fields = ('name','ports')
-        fields = '__all__'
       
 # ViewSets define the view behavior.
 class ServiceViewSet(viewsets.ModelViewSet):
@@ -73,17 +49,7 @@ class ServiceViewSet(viewsets.ModelViewSet):
     serializer_class = ServiceSerializer    
     
 # Serializers define the API representation.
-class RuleSerializer(serializers.ModelSerializer):
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-details")
-    #url = serializers.HyperlinkedIdentityField(view_name="firewall_rules_namespace:user-detail")
-    #ports = serializers.ManyRelatedField(source="ports")
-    #ports = MyPortsField(many=True,queryset=Port.objects.all())
-    
-    class Meta:
-        model = Rule
-        #fields = ('url', 'username', 'email', 'is_staff')
-        #fields = ('name','ports')
-        fields = '__all__'
+
       
 # ViewSets define the view behavior.
 class RuleViewSet(viewsets.ModelViewSet):
@@ -117,12 +83,17 @@ class UserFilteredView(#mixins.RetrieveModelMixin,
      
     def get_queryset(self):
         Logger.debug("UserFilteredView: testing self.request user existence: " +  str(self.request.user))
-        #pprint(self.request.method)
-        query_filter=self.request.GET['filter']
+        #if self.request.GET['filter'] is not None:
+        query_filter=self.request.GET.get('filter', '')
+        #query_filter=self.request.GET['filter']
         Logger.debug("UserFilteredView: testing query_filter: " +  query_filter)
         return self.model.objects.filter(username__startswith=query_filter)
+        #else:
+        #    return self.model.objects.all()
 
     '''queryset has to be empty here''' 
     #queryset = Rule.getUseAllowedObjects(self.request.user)
+    
+    
        
 

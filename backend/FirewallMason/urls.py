@@ -22,8 +22,6 @@ from rest_framework.documentation import include_docs_urls
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    
     url(r'^accounts/login/$', auth_views.login, name='login'),
     #TODO placeholder
     url(r'^accounts/profile/$', firewall_rules_index , name='profile'),
@@ -32,8 +30,6 @@ urlpatterns = [
     
     #url(r'^polls/', include('polls.urls')),
     url(r'^firewall_rules/', include('firewall_rules.urls')),
-    
-    url(r'^docs/', include_docs_urls(title='Firewall Mason API')), 
-    
-    
+    url(r'^api/', include('api.urls')),
+    #url(r'^docs/', include_docs_urls(title='Firewall Mason API')), 
 ]

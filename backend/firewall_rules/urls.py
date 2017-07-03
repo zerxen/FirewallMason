@@ -3,57 +3,15 @@ from django.conf.urls import url
 from firewall_rules.views_classes import LdapView
 from django.conf.urls import url, include
 from django.contrib.auth.models import User
-from rest_framework import routers, serializers, viewsets
-from firewall_rules.rest_api_experiments.rest_api import *
-from firewall_rules.rest_api_experiments.rest_api_jobs import *
-from firewall_rules.rest_api_experiments.ExtendedRouter import ExtendedRouter
 from django.contrib.auth.decorators import login_required
-from rest_framework.documentation import include_docs_urls
-
-
 from . import views
 
-from rest_framework.authtoken import views as rest_framework_views
-
 app_name = 'firewall_rules_namespace'
-
-
-'''
-REST API ROUTER
-'''
-# Routers provide an easy way of automatically determining the URL conf.
-router = ExtendedRouter()
-router.register(r'users', UserViewSet)
-router.register(r'users2', MixedViewSet)
-router.register(r'users-search', UserFilteredView)
-router.register(r'ports', PortViewSet)
-router.register(r'services', ServiceViewSet)
-router.register(r'rules', RuleViewSet)
-router.register(r'filtered_rules', UserFilteredRuleViewSet,'filtered_rules')
-router.register(r'version', VersionsList,'version')
-#router.register(r'user-details', UserViewSet)
-
-
-'''
- REST API VIEWS
-'''
-urlpatterns = [
-    
-    url(r'^api/', include(router.urls, namespace='api')),
-    
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    url(r'^get_auth_token/$', rest_framework_views.obtain_auth_token, name='get_auth_token'),
-    
-    #url(r'^api/version/$', VersionsList.as_view()),
-    #url(r'^api/version/(?P<pk>[0-9]+)/$', VersionDetail.as_view()),
-    url(r'^docs/', include_docs_urls(title='Firewall Mason API')), 
-
-]
 
 '''
  REGULAR VIEWS
 '''
-urlpatterns = urlpatterns + [
+urlpatterns = [
 
     url(r'^$', views.index, name='index'),
     url(r'^logout/$', views.logout_view, name='logout'),
