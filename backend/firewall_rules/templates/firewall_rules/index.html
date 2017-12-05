@@ -7,6 +7,7 @@
 {% load static %}
 <!-- JS imports for admin horizontal filter to work -->
 <script type="text/javascript" src="/admin/jsi18n/"></script>
+<script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/default.js' %}"></script>
 <script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/core.js' %}"></script>
 <script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/vendor/jquery/jquery.js' %}"></script>
 <script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/jquery.init.js' %}"></script>
@@ -15,6 +16,7 @@
 <script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/SelectFilter2.js' %}"></script>
 <script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/change_form.js' %}"></script>
 <script type="text/javascript" src="{% static 'firewall_rules/stolen_admin/static/admin/js/prepopulate_init.js' %}"></script>
+
 
 <!-- CSS imports -->
 <link rel="stylesheet" type="text/css" href="{% static 'firewall_rules/css/reset.css' %}" />
@@ -86,7 +88,11 @@
             <ul class="messages">
                 {% for message in messages %}
                 <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
-                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}Important: {% endif %}
+                    {% if message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}  
+                    <font color="red">ERROR:</font>
+                    {% else %}
+                    <font color="blue">INFO:</font>
+                    {% endif %}
                     {{ message }}
                 </li>
                 {% endfor %}
@@ -147,7 +153,7 @@
             {% elif about %} 
                 {% include "firewall_rules/about.html" %}  
             {% else %}
-                {% include "firewall_rules/home.html" %} 
+                {% include "firewall_rules/home.html" %}
             {% endif %}           
            </p>
         </div>

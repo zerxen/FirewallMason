@@ -2,31 +2,24 @@ VERSION CONTROL
 <br><br>
 -----------------
 
-{% for groupextension in groupextension_list %}
-
-    Group:
-    {{ groupextension.prefix }}
-    <br>
-    ID:
-    {{ groupextension.id }}
-    <br>
-    Version#:
-    {{ groupextension.version }}
-    <br>
-    Status: 
-        {% for key, value in groupextension.VERSION_STATE %}
-            {% if groupextension.version_states == key %} {{value}} {% endif %}  
-        {% endfor %}
-    <br>
-    <br>
-    {% if groupextension.version_states == 0 %}
-        <a style='color: white' href="{% url 'firewall_rules_namespace:version_control' groupextension.id 'edit' %} ">EDIT</a>
-    {% elif groupextension.version_states == 1 %}
-        <a style='color: white' href=".?group={{ groupextension.id }}&action=submit">SUBMIT</a>
-        <a style='color: white' href=".?group={{ groupextension.id }}&action=cancel">CANCEL</a>
-    {% elif groupextension.version_states == 2 %}
-        <a style='color: white' href=".?group={{ groupextension.id }}&action=withdraw">WITHDRAW</a>
-    {% endif %}
-         
-    -----------------<br>
-{% endfor %}     
+<u>DB Version:</u> {{ versionState.id }}<br><br>
+<u>Created:</u> {{ versionState.date_created }}<br><br>
+<u>Reviewed:</u> {{ versionState.date_review_started }}<br><br>
+<u>Approved:</u> {{ versionState.date_approved }}<br><br>
+<!--<u>Comment:</u><font color="white"> {{ versionState.comment|linebreaks }}</font><br><br>-->
+<u>Status:</u> 
+{% for key, value in versionState.VERSION_STATE %}
+    {% if versionState.version_states == key %} {{value}} {% endif %}  
+{% endfor %}<br><br>
+<u>Actions:</u><br>
+{% if versionState.version_states == versionState.APPROVED %}
+    <a style='color: white' href="{% url 'firewall_rules_namespace:version_control' 'edit' %} ">UNLOCK EDITING (version increase)</a>
+{% elif versionState.version_states == versionState.EDITING %}
+    <a style='color: white' href="{% url 'firewall_rules_namespace:version_control' 'submit' %}">SUBMIT FOR REVIEW</a><br><br>
+    <a style='color: white' href="{% url 'firewall_rules_namespace:version_control' 'cancel' %}">CANCEL THIS VERSION</a>
+{% elif versionState.version_states == versionState.REVIEW %}
+    <a style='color: white' href="{% url 'firewall_rules_namespace:version_control' 'withdraw' %}">WITHDRAW FROM REVIEW</a>
+{% endif %}
+<br><br>
+-----------------<br>
+    

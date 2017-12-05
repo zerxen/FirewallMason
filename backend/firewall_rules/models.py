@@ -62,7 +62,143 @@ class Logger(models.Model):
         log = Logger(date=now,log_text=log_text)
         log.save() 
         print("LOG["+ str(log.severity) + "]: " + log_text)
+
+'''
+VERSION STATE
+'''
+class CurrentVersionState(models.Model):
+    '''
+    PK/ID will be considered version state since it is incrementing integer by default
+    ''' 
+    date_created         = models.DateTimeField('date created',blank=True, default=None, null=True)
+    date_review_started  = models.DateTimeField('date created',blank=True, default=None, null=True)
+    date_approved        = models.DateTimeField('date created',blank=True, default=None, null=True)
+    comment     = models.CharField(max_length=5000)  
     
+    ''' version control states'''
+    INIT = 0
+    APPROVED = 1
+    EDITING = 2
+    REVIEW = 3
+
+    VERSION_STATE = (
+        (EDITING, 'Editing & Unlocked'),
+        (REVIEW, 'Review & Locked'),
+        (APPROVED, 'Approved & Locked')
+    )
+    version_states = models.PositiveSmallIntegerField(
+        choices=VERSION_STATE,
+        default=0, #Because initialization will increment to 1
+    )
+    
+    '''    
+    VERSION_STATE = (
+        (0, 'approved & locked'),
+        (1, 'edited & unlocked'),
+        (2, 'review & locked'),        
+    )
+    version_states = models.PositiveSmallIntegerField(default=0) 
+    '''
+    '''
+    This works to quickly get boolean from state
+    '''
+    @staticmethod
+    def lastapproved():
+        lastVersionState = CurrentVersionState.objects.latest('id')
+        if lastVersionState.version_states == 0:
+            return True
+        else:
+            return False 
+        
+    @staticmethod
+    def addcomment(comment,user):
+        version_control = CurrentVersionState.objects.latest('id') 
+        version_control.comment = version_control.comment + "\n" +  str(user) + ": " + str(comment);
+        Logger.log("Version controll add comment to " + str(version_control.pk) + " by " + str(user) + ":" + str(comment))
+        version_control.save() 
+        
+    @staticmethod
+    def getlatest():
+        return CurrentVersionState.objects.latest('id')               
+
+    @staticmethod
+    def increase(User):
+        comment = "Created by "+ User.username
+        now = timezone.now()
+        version = CurrentVersionState(date_created=now,comment=comment)
+        version.version_states = CurrentVersionState.EDITING
+        version.save()
+        Logger.log("New version create attempt by user " + User.username)
+        
+    @staticmethod
+    def approvetimestamp():      
+        current_version = CurrentVersionState.objects.filter(pk=CurrentVersionState.getlastversionnumber()).get()       
+        current_version.date_approved = timezone.now()
+        current_version.save()
+        Logger.debug("CurrentVersionState approver timestamp for version " + str(CurrentVersionState.getlastversionnumber()) + " date " + str(current_version.date_review_started)) 
+        
+    @staticmethod
+    def edittimestamp():      
+        current_version = CurrentVersionState.objects.filter(pk=CurrentVersionState.getlastversionnumber()).get()         
+        current_version.date_review_started = timezone.now()
+        current_version.save()
+        Logger.debug("CurrentVersionState editing start timestamp for version " + str(CurrentVersionState.getlastversionnumber()) + " date " + str(current_version.date_review_started))                
+        
+  
+    @staticmethod
+    def getlastversionnumber():
+        return CurrentVersionState.objects.latest('id').id
+            
+    
+    @staticmethod
+    def cloneDB():
+        '''
+        Let's start cloning!
+        '''
+        
+        # 1 - AtomicNetworkObject
+        atomicnetworkobjects = AtomicNetworkObject.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for atomicnetworkobject in atomicnetworkobjects:
+            AtomicNetworkObject.clone(atomicnetworkobject.id)
+            
+        # 2 - Location Reference
+        locaitonreferences = LocationReference.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for locaitonreference in locaitonreferences:
+            LocationReference.clone(locaitonreference.id)   
+            
+        # 3 - Ports
+        ports = Port.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for port in ports:
+            Port.clone(port.id) 
+            
+        # 4 - Service
+        services = Service.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for service in services:
+            Service.clone(service.id)    
+            
+        # 5 - StaticNetworkObjectGroup
+        staticnetworkgroups = StaticNetworkObjectGroup.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for staticnetworkgroup in staticnetworkgroups:
+            StaticNetworkObjectGroup.clone(staticnetworkgroup.id)  
+            
+        # 6 - AtomicNetworkObjectToLocationBind
+        atomicnetworkobjectstolocations = AtomicNetworkObjectToLocationBind.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for atomicnetworkobjectstolocation in atomicnetworkobjectstolocations:
+            AtomicNetworkObjectToLocationBind.clone(atomicnetworkobjectstolocation.id)     
+            
+        # 7 - SystemMap
+        systemmaps = SystemMap.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for systemmap in systemmaps:
+            SystemMap.clone(systemmap.id)      
+            
+        # 8 - Rules
+        rules = Rule.objects.filter(version=CurrentVersionState.getlastversionnumber())
+        for rule in rules:
+            Rule.clone(rule.id)                                                                    
+            
+            
+        return 0;
+          
 
 '''
   GROUP EXTENSION
@@ -83,21 +219,6 @@ class GroupExtension(models.Model):
     approvers = models.BooleanField(default=False)
     group = models.ForeignKey(Group, on_delete=models.CASCADE) 
     
-    ''' Group version control '''
-    VERSION_STATE = (
-        (0, 'approved'),
-        (1, 'review'),
-        (2, 'edited'),        
-    )    
-    version_states = models.PositiveSmallIntegerField(default=0) 
-    version = models.PositiveIntegerField(default=0) 
-    
-    def approved(self):
-        if self.version_states == 0:
-            return True
-        else:
-            return False 
-    
     @staticmethod
     def getGroupExtensionForUser(user):
         print("DEBUG: " + str(user.id));
@@ -108,6 +229,20 @@ class GroupExtension(models.Model):
             if group_extension is not None:
                 group_extension_list.append(group_extension)
         return group_extension_list
+    
+    @staticmethod
+    def bUserInAdminGroup(user):
+        print("DEBUG: " + str(user.id));
+        group_extension_list = []
+        for group in user.groups.all():
+            print("GROUP:" + group.name)
+            group_extension = GroupExtension.objects.get(group=group)
+            if group_extension.admin :
+                return True;
+            
+        return False         
+        
+           
     
 class OwnerControl(models.Model):
     class Meta:
@@ -144,12 +279,18 @@ class OwnerControl(models.Model):
                     object.allow_edit = False
                     Objects.append(object)   
                 
-        return Objects   
+        return Objects 
+
+''' HELPER FUNCTION TO VERSION AND OWNER CONTROL '''    
+def lastVersionForDefault():
+    return CurrentVersionState.getlastversionnumber()  
     
 class VersionAndOwnerControl(OwnerControl):
     class Meta:
         abstract = True
-    version     = models.PositiveIntegerField(default=0) 
+    version     = models.PositiveIntegerField(default=lastVersionForDefault) 
+    successor   = models.ForeignKey("self", on_delete=models.SET_NULL,default=None,null=True, blank=True,related_name='next_version')
+    predecessor  = models.ForeignKey("self", on_delete=models.SET_NULL,default=None,null=True, blank=True,related_name='previous_version')
     
     @classmethod
     def getUseAllowedObjects(cls, User):
@@ -163,12 +304,28 @@ class VersionAndOwnerControl(OwnerControl):
             group_extension = GroupExtension.objects.get(group=group)
             print("GROUP_EXTENSION:" + str(group_extension))
             if group_extension is not None:
-                version = group_extension.version
-                for object in cls.objects.filter(owner=group_extension,version=version).order_by('-id'):
+                Logger.debug("getUseAllowedObjects group_extension: " + str(group_extension))
+                version = CurrentVersionState.getlastversionnumber()
+                Logger.debug("getUseAllowedObjects CurrentVersionState.getlastversionnumber(): " + str(version))
+                for object in cls.objects.filter(owner=group_extension,version=version).order_by('id'):
                     object.allow_edit = True
                     Objects.append(object)   
                 
-        return Objects       
+        return Objects 
+    
+    @classmethod
+    def getPromiscuousObjects(cls):
+        Objects = [];
+        for group_extension in GroupExtension.objects.all():
+            print("GROUP_EXTENSION:" + str(group_extension))
+            if group_extension is not None and group_extension.promiscuous:
+                version = CurrentVersionState.getlastversionnumber()
+                Logger.debug("getPromiscuousObjects CurrentVersionState.getlastversionnumber(): " + str(version))
+                for object in cls.objects.filter(owner=group_extension,version=version).order_by('-id'):
+                    object.allow_edit = False
+                    Objects.append(object)   
+                
+        return Objects           
     
 class ApprovalAndVersionAndOwnerControl(VersionAndOwnerControl):
     class Meta:
@@ -180,8 +337,7 @@ class ApprovalAndVersionAndOwnerControl(VersionAndOwnerControl):
     rejected    = models.BooleanField(default=False);
     rejected_reason = models.CharField(max_length=1000,default='',blank=True)
     
-    
-    
+
     @property
     def can_be_deleted(self):
         if (self.approved and self.successor is not None):
@@ -217,6 +373,14 @@ class LocationReference(VersionAndOwnerControl):
         clone.version = clone.version + 1;      
         # NEW RULE PRACTICALLY
         clone.save()
+        
+        # tie with original
+        original = LocationReference.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
+        
+        clone.predecessor = original
+        clone.save()        
             
         return clone               
 
@@ -273,6 +437,14 @@ class AtomicNetworkObject(VersionAndOwnerControl):
         clone.version = clone.version + 1;       
         # NEW RULE PRACTICALLY
         clone.save()
+        
+        # tie with original
+        original = AtomicNetworkObject.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
+        
+        clone.predecessor = original
+        clone.save()
             
         return clone      
 
@@ -302,16 +474,25 @@ class StaticNetworkObjectGroup(VersionAndOwnerControl):
         clone.version = clone.version + 1;       
         # NEW RULE PRACTICALLY
         clone.save()
+        
+        # tie with original
+        original = StaticNetworkObjectGroup.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
+        
+        clone.predecessor = original
+        clone.save()     
+                
         ''' 
         On this point the self became useless because we lost track of it 
         during initial cloning, we need to search again original rule by id
         '''
-        original = StaticNetworkObjectGroup.objects.filter(pk=objectid).get() 
-
+        
         # STATIC_SOURCE  
-        for network_objects in original.network_objects.all():
-            Logger.debug("original:" + str(network_objects)) 
-            clone.network_objects.add(AtomicNetworkObject.clone(network_objects.pk))
+        for network_object in original.network_objects.all():
+            successor_pk = int(network_object.successor.pk)
+            Logger.debug("original port PK:" + str(network_object) + " but we are adding successor:" + str(successor_pk)) 
+            clone.network_objects.add(AtomicNetworkObject.objects.filter(pk=successor_pk).get())
             
         return clone            
                        
@@ -342,16 +523,26 @@ class AtomicNetworkObjectToLocationBind(VersionAndOwnerControl):
         On this point the self became useless because we lost track of it 
         during initial cloning, we need to search again original rule by id
         '''
-        original = AtomicNetworkObjectToLocationBind.objects.filter(pk=objectid).get() 
-
-        # location
-        if original.location is not None:
-            clone.location = LocationReference.clone(original.location.pk)
+        # tie with original
+        original = AtomicNetworkObjectToLocationBind.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
         
+        clone.predecessor = original
+        clone.save()     
+                
+        # STATIC_SOURCE 
+        if original.location is not None: 
+            successor_pk = int(original.location.successor.pk)
+            Logger.debug("original port PK:" + str(original.location) + " but we are adding successor:" + str(successor_pk)) 
+            clone.location = LocationReference.objects.filter(pk=successor_pk).get() 
+            clone.save()
+            
         # STATIC_SOURCE  
-        for network_objects in original.network_objects.all():
-            Logger.debug("original:" + str(network_objects)) 
-            clone.network_objects.add(AtomicNetworkObject.clone(network_objects.pk))
+        for network_object in original.network_objects.all():
+            successor_pk = int(network_object.successor.pk)
+            Logger.debug("original port PK:" + str(network_object) + " but we are adding successor:" + str(successor_pk)) 
+            clone.network_objects.add(AtomicNetworkObject.objects.filter(pk=successor_pk).get())                      
             
         return clone     
     
@@ -388,12 +579,18 @@ class SystemMap(VersionAndOwnerControl):
         On this point the self became useless because we lost track of it 
         during initial cloning, we need to search again original rule by id
         '''
-        original = SystemMap.objects.filter(pk=objectid).get() 
+        original = SystemMap.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
         
+        clone.predecessor = original
+        clone.save()     
+                
         # STATIC_SOURCE  
         for network_object_to_location_list in original.network_object_to_location_list.all():
-            Logger.debug("original:" + str(network_object_to_location_list)) 
-            clone.network_object_to_location_list.add(AtomicNetworkObjectToLocationBind.clone(network_object_to_location_list.pk))
+            successor_pk = int(network_object_to_location_list.successor.pk)
+            Logger.debug("original port PK:" + str(network_object_to_location_list) + " but we are adding successor:" + str(successor_pk)) 
+            clone.network_object_to_location_list.add(AtomicNetworkObjectToLocationBind.objects.filter(pk=successor_pk).get())                    
             
         return clone         
     
@@ -441,6 +638,14 @@ class Port(VersionAndOwnerControl):
         clone.version = clone.version + 1;        
         # NEW RULE PRACTICALLY
         clone.save()
+        
+        # tie with original
+        original = Port.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
+        
+        clone.predecessor = original
+        clone.save()                
 
         return clone   
                         
@@ -469,6 +674,14 @@ class Service(VersionAndOwnerControl):
         clone.version = clone.version + 1;      
         # NEW RULE PRACTICALLY
         clone.save()
+        
+        # tie with original
+        original = Service.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
+        
+        clone.predecessor = original
+        clone.save()          
         ''' 
         On this point the self became useless because we lost track of it 
         during initial cloning, we need to search again original rule by id
@@ -476,9 +689,10 @@ class Service(VersionAndOwnerControl):
         original = Service.objects.filter(pk=objectid).get() 
         
         # STATIC_SOURCE  
-        for ports in original.ports.all():
-            Logger.debug("original:" + str(ports)) 
-            clone.ports.add(Port.clone(ports.pk))
+        for port in original.ports.all():
+            successor_pk = int(port.successor.pk)
+            Logger.debug("original port PK:" + str(port) + " but we are adding successor:" + str(successor_pk)) 
+            clone.ports.add(Port.objects.filter(pk=successor_pk).get())
             
         return clone         
         
@@ -518,6 +732,7 @@ class Rule(ApprovalAndVersionAndOwnerControl):
     # COMMENT
     comment = models.CharField(max_length=1000,null=True, blank=True,default='') 
     
+    '''
     def __str__(self):
         sources_string = "SSRC:["
         for source_object in self.static_source.all():
@@ -541,17 +756,18 @@ class Rule(ApprovalAndVersionAndOwnerControl):
             
             
         return self.owner.prefix + "_[" + self.action + " " + sources_string +" " + sources_service_string +" " + destination_string + " " + destination_service_string + "] " + self.comment
-    
+    '''
     
     
     @staticmethod
-    def clone(ruleid):
+    def clone(objectid):
         
         #import pdb; pdb.set_trace()
         
-        Logger.debug("Cloning rule ID: " + str(ruleid))                   
+        Logger.debug("Cloning rule ID: " + str(objectid))                   
         
-        clone = Rule.objects.filter(pk=ruleid).get()       
+        clone = Rule.objects.filter(pk=objectid).get()  
+        Logger.debug("Owned by: " + str(clone.owner))   
         
         # Clean the whole inheritance structure
         clone.id = None
@@ -563,12 +779,22 @@ class Rule(ApprovalAndVersionAndOwnerControl):
         
         # NEW RULE PRACTICALLY
         clone.save()
-        
+        Logger.debug("New owned by: " + str(clone.owner))
+
         ''' 
         On this point the self became useless because we lost track of it 
         during initial cloning, we need to search again original rule by id
         '''
-        original = Rule.objects.filter(pk=ruleid).get() 
+        original = Rule.objects.filter(pk=objectid).get()
+        original.successor = clone
+        original.save()
+        
+        clone.predecessor = original
+        clone.save()      
+        
+        '''
+        Clone owner
+        '''
         
         #import pdb; pdb.set_trace() 
         
@@ -578,41 +804,53 @@ class Rule(ApprovalAndVersionAndOwnerControl):
           
         # STATIC_SOURCE  
         for static_source in original.static_source.all():
-            Logger.debug("original:" + str(static_source)) 
-            clone.static_source.add(StaticNetworkObjectGroup.clone(static_source.pk))
+            successor_pk = int(static_source.successor.pk)
+            Logger.debug("original static_source PK:" + str(static_source) + " but we are adding successor:" + str(successor_pk)) 
+            clone.static_source.add(StaticNetworkObjectGroup.objects.filter(pk=successor_pk).get())            
             
         # STATIC DESTINATION  
         for static_destination in original.static_destination.all():
-            Logger.debug("original:" + str(static_destination)) 
-            clone.static_destination.add(StaticNetworkObjectGroup.clone(static_destination.pk))            
+            successor_pk = int(static_destination.successor.pk)
+            Logger.debug("original static_destination PK:" + str(static_destination) + " but we are adding successor:" + str(successor_pk)) 
+            clone.static_destination.add(StaticNetworkObjectGroup.objects.filter(pk=successor_pk).get())                         
             
         #dynamic_source_location
-        if original.dynamic_source_location is not None:
-            clone.dynamic_source_location = LocationReference.clone(original.dynamic_source_location.pk);
+        if original.dynamic_source_location is not None: 
+            successor_pk = int(original.dynamic_source_location.successor.pk)
+            Logger.debug("original port PK:" + str(original.dynamic_source_location) + " but we are adding successor:" + str(successor_pk)) 
+            clone.dynamic_source_location = LocationReference.objects.filter(pk=successor_pk).get() 
+            clone.save()            
             
         #dynamic_destination_location
-        if original.dynamic_destination_location is not None:
-            clone.dynamic_destination_location = LocationReference.clone(original.dynamic_destination_location.pk);        
+        if original.dynamic_destination_location is not None: 
+            successor_pk = int(original.dynamic_destination_location.successor.pk)
+            Logger.debug("original port PK:" + str(original.dynamic_destination_location) + " but we are adding successor:" + str(successor_pk)) 
+            clone.dynamic_destination_location = LocationReference.objects.filter(pk=successor_pk).get() 
+            clone.save()                    
         
         # DYNAMIC SOURCE  
         for dynamic_source in original.dynamic_source.all():
-            Logger.debug("original:" + str(dynamic_source)) 
-            clone.dynamic_source.add(SystemMap.clone(dynamic_source.pk))
+            successor_pk = int(dynamic_source.successor.pk)
+            Logger.debug("original dynamic_source PK:" + str(dynamic_source) + " but we are adding successor:" + str(successor_pk)) 
+            clone.dynamic_source.add(SystemMap.objects.filter(pk=successor_pk).get())              
             
         # DYNAMIC DESTINATION  
         for dynamic_destination in original.dynamic_destination.all():
-            Logger.debug("original:" + str(dynamic_destination)) 
-            clone.dynamic_destination.add(SystemMap.clone(dynamic_destination.pk)) 
+            successor_pk = int(dynamic_destination.successor.pk)
+            Logger.debug("original dynamic_destination PK:" + str(dynamic_destination) + " but we are adding successor:" + str(successor_pk)) 
+            clone.dynamic_destination.add(SystemMap.objects.filter(pk=successor_pk).get())             
             
         # source_port_services
         for source_port_services in original.source_port_services.all():
-            Logger.debug("original:" + str(source_port_services)) 
-            clone.source_port_services.add(Service.clone(source_port_services.pk))  
+            successor_pk = int(source_port_services.successor.pk)
+            Logger.debug("original source_port_services PK:" + str(source_port_services) + " but we are adding successor:" + str(successor_pk)) 
+            clone.source_port_services.add(Service.objects.filter(pk=successor_pk).get())              
             
         # destination_port_services 
         for destination_port_services in original.destination_port_services.all():
-            Logger.debug("original:" + str(destination_port_services)) 
-            clone.destination_port_services.add(Service.clone(destination_port_services.pk))                         
+            successor_pk = int(destination_port_services.successor.pk)
+            Logger.debug("original destination_port_services PK:" + str(destination_port_services) + " but we are adding successor:" + str(successor_pk)) 
+            clone.destination_port_services.add(Service.objects.filter(pk=successor_pk).get())                                    
             
         return clone
         

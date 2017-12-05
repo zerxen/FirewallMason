@@ -4,6 +4,7 @@
 # IMPORT
 from django.contrib.auth.models import Group, User
 from firewall_rules.models import *
+from Tkconstants import CURRENT
 
 def initialization():
     
@@ -13,6 +14,8 @@ def initialization():
     
     print("Initialization started ...")
     Logger.log('INITIALIZED')
+
+    
     #######################
     # SYSTEM group creation
     #######################
@@ -32,6 +35,16 @@ def initialization():
     user.groups.add(ga)
     user.save()
     
+    #######################
+    # VERSIONING INIT
+    #######################
+    CurrentVersionState.increase(user) 
+    current_version = CurrentVersionState.objects.filter(pk=1).get()
+    current_version.version_states = CurrentVersionState.APPROVED
+    current_version.save()  
+    CurrentVersionState.edittimestamp()
+    CurrentVersionState.approvetimestamp()
+    
     ########################
     # Network group creation
     ########################
@@ -41,12 +54,12 @@ def initialization():
     gex.save()
     
     # test user creation
-    user=User.objects.create_user('peter.havrila@hpe.com', password='kreten123')
-    user.is_superuser=False
-    user.is_staff=False
-    user.save()
-    user.groups.add(g)
-    user.save()
+    user2=User.objects.create_user('peter.havrila@hpe.com', password='kreten123')
+    user2.is_superuser=False
+    user2.is_staff=False
+    user2.save()
+    user2.groups.add(g)
+    user2.save()
     
     #######
     # PORTS
@@ -147,6 +160,9 @@ def initialization():
     
     # Type0 - static,static
     r0 = Rule(comment='Type 0 rule',owner=gaex)
+    r0.version = 1;
+    r0.approved = True;
+    r0.approved_by = user;
     r0.save()
     r0.static_source.add(static2)
     r0.static_destination.add(static1)
@@ -154,7 +170,11 @@ def initialization():
     r0.destination_port_services.add(s_http)
     
     
+    
     r1 = Rule(comment='Second Rule',owner=gaex)
+    r1.version = 1;
+    r1.approved = True;
+    r1.approved_by = user;    
     r1.save()
     r1.static_source.add(static2)
     r1.dynamic_destination.add(system1)
@@ -163,6 +183,9 @@ def initialization():
     
     
     r2 = Rule(comment='Third Rule',owner=gaex)
+    r2.version = 1;
+    r2.approved = True;
+    r2.approved_by = user;    
     r2.save()
     r2.dynamic_source.add(system1)
     r2.dynamic_destination.add(system1)

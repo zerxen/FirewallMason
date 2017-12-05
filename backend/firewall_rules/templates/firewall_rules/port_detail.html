@@ -2,7 +2,7 @@
 
 <!-- FORM START -->
 {% if port.id == 0 or port.id is None %} 
-    <form action="{% url 'firewall_rules_namespace:ports_detail' port.id 'new' %}" method="post">
+    <form action="{% url 'firewall_rules_namespace:ports_detail' 0 'new' %}" method="post">
     {% csrf_token %}
 {% else %}
     <form action="{% url 'firewall_rules_namespace:ports_detail' port.id 'edit' %}" method="post">

@@ -24,12 +24,17 @@ class PortList(APIView):
     - **kreten** to target<br>
             
     """
+    
+    
     def get(self, request, format=None):
+               
         promiscuous=self.request.GET.get('promiscuous', False)
-        #ports = Port.objects.all()
-        #ports = Port.getUseAllowedObjects(request.user)
-        ports = Port.getPromiscuousObjects()
-        serializer = PortSerializer(ports, many=True)
+        if promiscuous:
+            ports = Port.getPromiscuousObjects()
+        else:
+            ports = Port.getUseAllowedObjects(request.user)
+         
+        serializer = PortSerializer(ports, many=True)   
         return Response(serializer.data)
 
     def post(self, request, format=None):

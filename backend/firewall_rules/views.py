@@ -17,6 +17,7 @@ from django.shortcuts import redirect
 from django.views.generic import TemplateView
 from django.contrib.auth import logout
 from django.contrib import messages;
+from time import gmtime, strftime
 import copy
 import pprint
 
@@ -25,13 +26,11 @@ DEBUG = True
 def get_version_control_context(request,**kwargs):
     context = {}
     if DEBUG:
-        context.update({
-            'debug' : 'debug mode ON'
-        })
-        
-    groupextension_list = GroupExtension.getGroupExtensionForUser(request.user)
+        messages.add_message(request, messages.INFO, "DEBUG MODE IS ENABLED IN VIEWs")
+    
+    versionState = CurrentVersionState.getlatest()
     context.update({
-                'groupextension_list' : groupextension_list
+                'versionState' : versionState
             })    
         
     return context 
@@ -59,6 +58,8 @@ def about(request):
             'author'    : 'phavrila@gmail.com',              
         }
     template = loader.get_template('firewall_rules/index.html')
+    context.update(get_version_control_context(request))
+    
     return HttpResponse(template.render(context, request))
 
 @login_required
@@ -85,6 +86,8 @@ def firewall_configuration(request):
     context = {
         'locations_for_fw_config_list': locations_for_fw_config_list,
     }
+    
+    context.update(get_version_control_context(request))
 
     template = loader.get_template('firewall_rules/index.html')
     return HttpResponse(template.render(context, request))
@@ -136,7 +139,7 @@ class RulesView(FirebrickListView):
     context_object_name = 'rules_list'
     template_name = 'firewall_rules/index.html'
     def get_queryset(self):
-        return list(set(Rule.getUseAllowedObjects(self.request.user) + Rule.getPromiscuousObjects())) 
+        return list(set(Rule.getUseAllowedObjects(self.request.user) + Rule.getPromiscuousObjects()))
 
 class ServicesView(FirebrickListView):
     context_object_name = 'services_list'
@@ -192,17 +195,88 @@ class VersionControlView(TemplateView):
     template_name = "firewall_rules/index.html"
     extra_context={'version_control':'version_control view entered'}
     
+    
     def get(self, request, *args, **kwargs):
         context={}
-        
-        rules_list = Rule.getUseAllowedObjects(request.user)
-        ''' STEP 1 - CLONING RULES '''
-        for rule in rules_list:
-            Rule.clone(rule.id)               
-        
-        context.update(self.extra_context)
-        context.update(get_version_control_context(request,**kwargs))               
         template = loader.get_template(self.template_name)
+        
+        ''' CHECK INPUT '''
+        if 'confirmed' in kwargs:
+            command_context={'confirmed':"True"}
+            context.update(command_context)
+                    
+        if 'command' not in kwargs:
+            messages.add_message(request, messages.ERROR, "Missing version control COMMAND")
+            return HttpResponse(template.render(context, request))
+
+        messages.add_message(request, messages.INFO, "COMMAND: " + kwargs['command'])
+        Logger.debug("COMMAND: " + str(kwargs['command']))
+        command_context={'command':str(kwargs['command'])}
+        context.update(command_context)
+        
+        '''
+        COMMANDS PROCESSING START
+        '''
+        if str(kwargs['command']) == 'edit':
+            if CurrentVersionState.getlatest().version_states != CurrentVersionState.APPROVED:
+                messages.add_message(request, messages.ERROR, "You are trying to start DB clone and editing unlock from a wrong initial state!")
+                return HttpResponse(template.render(context, request))
+            elif not GroupExtension.bUserInAdminGroup(request.user):
+                messages.add_message(request, messages.ERROR, "You are not allowed to change DB states!")
+                return HttpResponse(template.render(context, request))                             
+            else:
+                '''
+                CloneDB & increase version on success
+                '''        
+                if CurrentVersionState.cloneDB() == 0:
+                    Logger.debug("DB Cloning successfull")
+                    CurrentVersionState.increase(request.user)
+                    CurrentVersionState.addcomment("New version at " + strftime("%a %b %d %H:%M:%S %Y", gmtime()), request.user)
+                    
+        elif str(kwargs['command']) == 'submit':
+            if CurrentVersionState.getlatest().version_states != CurrentVersionState.EDITING:
+                messages.add_message(request, messages.ERROR, "DB is not in state for review submission!")
+                context.update(get_version_control_context(request,**kwargs))  
+                return HttpResponse(template.render(context, request))
+            elif not GroupExtension.bUserInAdminGroup(request.user):
+                messages.add_message(request, messages.ERROR, "You are not allowed to change DB states!")
+                return HttpResponse(template.render(context, request))              
+            else:                   
+                CurrentVersionState.addcomment("Submit at " + strftime("%a %b %d %H:%M:%S %Y", gmtime()), request.user)
+                CurrentVersionState.edittimestamp()
+                version_control = CurrentVersionState.getlatest()
+                version_control.version_states = CurrentVersionState.REVIEW;
+                version_control.save()
+                context.update(get_version_control_context(request,**kwargs))  
+                return HttpResponse(template.render(context, request))   
+
+        elif str(kwargs['command']) == 'withdraw':
+            if CurrentVersionState.getlatest().version_states != CurrentVersionState.REVIEW:
+                messages.add_message(request, messages.ERROR, "DB is not in state for withdraw!")
+                context.update(get_version_control_context(request,**kwargs))  
+                return HttpResponse(template.render(context, request))
+            elif not GroupExtension.bUserInAdminGroup(request.user):
+                messages.add_message(request, messages.ERROR, "You are not allowed to change DB states!")
+                return HttpResponse(template.render(context, request))              
+            else:                   
+                CurrentVersionState.addcomment("Withdrawal at " + strftime("%a %b %d %H:%M:%S %Y", gmtime()), request.user)
+                version_control = CurrentVersionState.getlatest()
+                version_control.version_states = CurrentVersionState.EDITING;
+                version_control.save()
+                context.update(get_version_control_context(request,**kwargs))  
+                return HttpResponse(template.render(context, request))              
+                                  
+        else:
+            messages.add_message(request, messages.ERROR, "UNKNOW COMMAND!")
+            context.update(get_version_control_context(request,**kwargs))  
+            return HttpResponse(template.render(context, request))             
+                               
+                
+        '''
+        Update context for view rendering
+        '''
+        context.update(self.extra_context)
+        context.update(get_version_control_context(request,**kwargs))        
         return HttpResponse(template.render(context, request))          
 
 '''
@@ -280,7 +354,7 @@ class FirebrickDetailView(TemplateView):
                 )                   
             
         context.update(self.extra_context)                
-               
+        context.update(get_version_control_context(request,**kwargs))        
         template = loader.get_template(self.template_name)
         return HttpResponse(template.render(context, request))  
     
@@ -298,7 +372,7 @@ class FirebrickDetailView(TemplateView):
             if field_name not in request.POST:
                 messages.add_message(request, messages.ERROR, 'Missing mandatory field' + field_name)
                 to_return = False;          
-
+        
         return to_return
         
     
@@ -310,14 +384,14 @@ class FirebrickDetailView(TemplateView):
             try:
                 for field_name in self.model_field_names:
                     if request.POST[field_name] is None or request.POST[field_name] == '':
-                        Logger.debug("ERROR: Empty mandatory field")
+                        Logger.debug("ERROR: Empty mandatory field " + field_name)
                         model_field_values.append(None) 
                     else:
                         Logger.debug("POST extraction field_name: " + field_name + " resulted in " + request.POST[field_name])
                         model_field_values.append(request.POST[field_name])                        
                 for field_name in self.many_to_many_field_names:
                     if request.POST.getlist(field_name) is None or len(request.POST.getlist(field_name)) == 0:
-                        Logger.debug("ERROR: Empty mandatory m2m field")
+                        Logger.debug("ERROR: Empty mandatory m2m field " + field_name)
                         model_field_values.append(None)                      
                     for value_iteration in request.POST.getlist(field_name):
                         Logger.debug("POST extraction m2m_field_name: " + field_name + " resulted in " + value_iteration)
@@ -326,7 +400,7 @@ class FirebrickDetailView(TemplateView):
                     )
                 for field_name in self.foreign_key_field_names:
                     if request.POST[field_name] is None or request.POST[field_name] == '':
-                        Logger.debug("ERROR: Empty mandatory field")
+                        Logger.debug("ERROR: Empty mandatory field " + field_name)
                         model_field_values.append(None)
                     else:
                         Logger.debug("POST extraction fk_field_name: " + field_name + " resulted in " + request.POST[field_name])
@@ -352,76 +426,58 @@ class FirebrickDetailView(TemplateView):
                     except:
                         return HttpResponse("THE EDITED ITEM WAS NO LONGER FOUND!")
                     else:
-                        if model_instance.approved:
-                            ''' EDITING APPROVED RULE '''
-                            Logger.debug("This rule is approved, we are creating a successor ")
-                            # try:
-                            successor_model_instance = self.model()
-                            for field_name,field_value in zip(self.model_field_names,model_field_values):
-                                #Logger.debug("setattr( " + str(successor_model_instance) + "," + field_name +  "," + str(field_value) + ")")
-                                setattr(successor_model_instance, field_name, field_value)
-                            for field_name,field_value in zip(self.foreign_key_field_names,foreign_keys_field_values):
-                                #Logger.debug("setattr( " + str(successor_model_instance) + "," + field_name +  "," + str(field_value) + ")")
-                                fk_class = successor_model_instance._meta.get_field(field_name).related_model.objects.get(pk=field_value)
-                                setattr(successor_model_instance, field_name, fk_class)  
-                            
-                            successor_model_instance.save()
-                            
-                            '''                            
-                            SET SUCCESSOR
-                            '''
-                            model_instance.successor = successor_model_instance
-                            model_instance.edited_by = self.request.user
-                            model_instance.save()
-                            # WE NEED TO SAVE BEFORE WE CAN ADD many2many objects
-                            
-                            # THIS WILL TAKE CARE OF ADDING ALL M2M FIELD OBJECTS SELECTED 
-                            for field_name in self.many_to_many_field_names:
-                                model_instance_m2m_field = getattr(successor_model_instance,field_name)
-                                for child_instance in many_to_many_field_values[field_name]:
-                                    model_instance_m2m_field.add(child_instance)                        
-                            #except:
-                            #    return HttpResponse("Failed to instantiate new successor object")                            
-                        else:
-                            ''' NOT APPROVED RULE EDIT '''
-                            Logger.debug("This rule is NOT approved, we are editing the request ")
-                            for field_name,field_value in zip(self.model_field_names,model_field_values):
-                                Logger.debug("setattr( " + str(model_instance) + "," + field_name +  "," + str(field_value) + ")")
-                                setattr(model_instance, field_name, field_value)
-                            for field_name,field_value in zip(self.foreign_key_field_names,foreign_keys_field_values):
-                                Logger.debug("setattr( " + str(model_instance) + "," + field_name +  "," + str(field_value) + ")")
-                                fk_class = model_instance._meta.get_field(field_name).related_model.objects.get(pk=field_value)
-                                setattr(model_instance, field_name, fk_class)                            
-                            # WE NEED TO SAVE BEFORE WE CAN ADD many2many objects
-                            model_instance.save()
-                            # THIS WILL TAKE CARE OF ADDING ALL M2M FIELD OBJECTS SELECTED 
-                            for field_name in self.many_to_many_field_names:
-                                model_instance_m2m_field = getattr(model_instance,field_name)
-                                # WE NEED TO DELETE ALL OBJECTS TO ENTER ONLY THE NEW ONES
-                                #for child_instance in model_instance_m2m_field.all():
-                                model_instance_m2m_field.clear()
-                                for child_instance in many_to_many_field_values[field_name]:
-                                    model_instance_m2m_field.add(child_instance)   
-                                                            
-                if kwargs['command'] == 'new':                   
-                    try:
-                        model_instance = self.model()
+                        ''' 
+                        CHANGE APPROVED STATE OF ONLY APPROVABLE OBJECT TO FALSE ON EDITING
+                        '''
+                        #if type(model_instance) is ApprovalAndVersionAndOwnerControl:
+                        if isinstance(model_instance, ApprovalAndVersionAndOwnerControl):
+                            Logger.debug("FirebrickDetailView - POST: detected instance of approvable object, setting to FALSE")
+                            model_instance.approved = False;                          
+                        
+                        '''
+                        CHANGE FIELDS OF OBJECT
+                        '''                        
                         for field_name,field_value in zip(self.model_field_names,model_field_values):
                             Logger.debug("setattr( " + str(model_instance) + "," + field_name +  "," + str(field_value) + ")")
                             setattr(model_instance, field_name, field_value)
                         for field_name,field_value in zip(self.foreign_key_field_names,foreign_keys_field_values):
                             Logger.debug("setattr( " + str(model_instance) + "," + field_name +  "," + str(field_value) + ")")
                             fk_class = model_instance._meta.get_field(field_name).related_model.objects.get(pk=field_value)
-                            setattr(model_instance, field_name, fk_class)                             
+                            setattr(model_instance, field_name, fk_class)                            
                         # WE NEED TO SAVE BEFORE WE CAN ADD many2many objects
                         model_instance.save()
                         # THIS WILL TAKE CARE OF ADDING ALL M2M FIELD OBJECTS SELECTED 
                         for field_name in self.many_to_many_field_names:
                             model_instance_m2m_field = getattr(model_instance,field_name)
+                            # WE NEED TO DELETE ALL OBJECTS TO ENTER ONLY THE NEW ONES
+                            #for child_instance in model_instance_m2m_field.all():
+                            model_instance_m2m_field.clear()
                             for child_instance in many_to_many_field_values[field_name]:
-                                model_instance_m2m_field.add(child_instance)                        
-                    except:
-                        return HttpResponse("Failed to instantiate new object")
+                                model_instance_m2m_field.add(child_instance) 
+                            
+                                                            
+                if kwargs['command'] == 'new':                   
+                    #try:
+                    Logger.debug("ENTERING COMMAND NEW SECTION")
+                    model_instance = self.model()
+                    Logger.debug("Self model: " + str(model_instance))
+                    for field_name,field_value in zip(self.model_field_names,model_field_values):
+                        Logger.debug("setattr( " + str(model_instance) + "," + field_name +  "," + str(field_value) + ")")
+                        setattr(model_instance, field_name, field_value)
+                    for field_name,field_value in zip(self.foreign_key_field_names,foreign_keys_field_values):
+                        Logger.debug("setattr( " + str(model_instance) + "," + field_name +  "," + str(field_value) + ")")
+                        fk_class = model_instance._meta.get_field(field_name).related_model.objects.get(pk=field_value)
+                        setattr(model_instance, field_name, fk_class)                             
+                    # WE NEED TO SAVE BEFORE WE CAN ADD many2many objects
+                    model_instance.save()
+                    Logger.debug("new model saved")
+                    # THIS WILL TAKE CARE OF ADDING ALL M2M FIELD OBJECTS SELECTED 
+                    for field_name in self.many_to_many_field_names:
+                        model_instance_m2m_field = getattr(model_instance,field_name)
+                        for child_instance in many_to_many_field_values[field_name]:
+                            model_instance_m2m_field.add(child_instance)                        
+                    #except:
+                    #    return HttpResponse("Failed to instantiate new object")
                 return redirect(reverse(self.after_edit_redirect_url_name))
         return redirect(reverse(self.after_edit_redirect_url_name))          
     
@@ -501,7 +557,7 @@ class FirebrickRuleDetailView(FirebrickDetailView):
         mandatory = [ 'owner_id','comment','action', 'source_port_services', 'destination_port_services' ] 
                   
         for field_name in mandatory:
-            if request.POST[field_name] is None or request.POST[field_name] == '':
+            if field_name not in request.POST or request.POST[field_name] is None or request.POST[field_name] == '':
                 messages.add_message(request, messages.ERROR, 'Missing mandatory field' + field_name)
                 to_return = False;   
                 

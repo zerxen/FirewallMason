@@ -19,7 +19,8 @@ urlpatterns = [
     url(r'^about/$', views.about, name='about'),
     url(r'^requestaccess/$', views.request_access, name='requestaccess'),
     
-    url(r'^version_control/(?P<pk>[0-9]+)/(?P<command>[a-z]+)/', login_required(views.VersionControlView.as_view()), name='version_control'),       
+    url(r'^version_control/(?P<command>[a-z]+)/(?P<pk>[0-9]+)/', login_required(views.VersionControlView.as_view()), name='version_control_specific'),       
+    url(r'^version_control/(?P<command>[a-z]+)/', login_required(views.VersionControlView.as_view()), name='version_control'),  
         
     url(r'^rules/$', login_required(views.RulesView.as_view()), name='rules'),
     url(r'^rules/(?P<pk>[0-9]+)/(?P<command>[a-z]+)/$', login_required(views.FirebrickRuleDetailView.as_view()), name='rules_detail'),    
